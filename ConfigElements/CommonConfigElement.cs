@@ -1,0 +1,89 @@
+using CommonLibrary.ConfigElements.ConfigAdapters;
+using CommonLibrary.ConfigElements.ConfigConverters;
+using CommonLibrary.Locks;
+
+namespace CommonLibrary.ConfigElements;
+
+public class CommonConfigElement : IConfigElement
+{
+    private readonly object _innerVal;
+    private LockManager _lockManager = new LockManager();
+
+    public CommonConfigElement(object innerVal)
+    {
+        _innerVal = innerVal;
+    }
+
+    private IConfigElement GetConfigElement(string key)
+    {
+        lock (_lockManager.AcquireLockObject("GetConfigElement"))
+        {
+            return _innerVal switch
+            {
+                Dictionary<string, IConfigElement> dictionary => dictionary[key],
+                Dictionary<string, object> objDict => new CommonConfigElement(objDict[key]),
+                _ => ConfigElementAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())
+                    .ToConfigElement(_innerVal)[key]
+            };
+        }
+    }
+        
+    public object GetValue()
+    {
+        return _innerVal;
+    }
+
+    public void SetValue(string key, IConfigElement val)
+    {
+        lock (_lockManager.AcquireLockObject("SetValue"))
+        {
+            if (_innerVal is Dictionary<string, IConfigElement> dictionary)
+            {
+                dictionary[key] = val;
+            }
+
+            throw new InvalidOperationException();
+        }
+    }
+
+    public IConfigElement this[string key]
+    {
+        get => GetConfigElement(key);
+        set => SetValue(key, value);
+    }
+
+    public object Convert(Type type)
+    {
+        lock (_lockManager.AcquireLockObject("Convert"))
+        {
+            return _innerVal is IConvertible 
+                ? System.Convert.ChangeType(_innerVal, type) 
+                : throw new InvalidCastException();
+        }
+    }
+
+    public T Convert<T>() => (T) Convert(typeof(T));
+       
+
+    public object ConvertWith(IConfigConverter converter)
+    {
+        lock (_lockManager.AcquireLockObject("ConvertWith"))
+        {
+            return converter.Convert(this);
+        }
+    }
+
+    public T ConvertWith<T>(IConfigConverter<T> converter)
+    {
+        lock (_lockManager.AcquireLockObject("ConvertWith<T>"))
+        {
+            return converter.Convert(this);
+        }
+        
+    }
+
+    public bool IsNull(string key)
+    {
+        return Equals(_innerVal, NullConfigValue.Value);
+    }
+}
