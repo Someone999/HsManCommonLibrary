@@ -1,7 +1,7 @@
 using System.Text;
-using CommonLibrary.Utils;
+using HsManCommonLibrary.Utils;
 
-namespace CommonLibrary.Logger.Renderers;
+namespace HsManCommonLibrary.Logger.Renderers;
 
 public class ConsoleStringRender : IStringRenderer
 {

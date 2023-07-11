@@ -1,4 +1,4 @@
-namespace CommonLibrary.BindableValues;
+namespace HsManCommonLibrary.BindableValues;
 
 public class ReadonlyBindableValue<T> : IReadonlyBindableValue<T>
 {

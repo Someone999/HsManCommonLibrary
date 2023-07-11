@@ -1,9 +1,9 @@
-using CommonLibrary.BindableValues;
-using CommonLibrary.ConfigElements.ConfigConverters;
-using CommonLibrary.Locks;
+using HsManCommonLibrary.BindableValues;
+using HsManCommonLibrary.ConfigElements.ConfigConverters;
+using HsManCommonLibrary.Locks;
 using Newtonsoft.Json;
 
-namespace CommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.ConfigElements;
 
 public class JsonConfigElement : IConfigElement
 {

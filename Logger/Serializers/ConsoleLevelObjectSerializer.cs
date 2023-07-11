@@ -1,7 +1,7 @@
-using CommonLibrary.Logger.Renderers;
-using CommonLibrary.Utils;
+using HsManCommonLibrary.Logger.Renderers;
+using HsManCommonLibrary.Utils;
 
-namespace CommonLibrary.Logger.Serializers;
+namespace HsManCommonLibrary.Logger.Serializers;
 
 public class ConsoleLevelObjectSerializer : IObjectSerializer<Level>
 {

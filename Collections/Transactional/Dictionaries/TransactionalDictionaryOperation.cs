@@ -1,4 +1,4 @@
-namespace CommonLibrary.Collections.Transactional.Dictionaries;
+namespace HsManCommonLibrary.Collections.Transactional.Dictionaries;
 
 public class TransactionalDictionaryOperation<TKey, TValue>
 {

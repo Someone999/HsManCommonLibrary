@@ -1,6 +1,6 @@
-using CommonLibrary.Exceptions;
+using HsManCommonLibrary.Exceptions;
 
-namespace CommonLibrary.Collections.Transactional.Lists;
+namespace HsManCommonLibrary.Collections.Transactional.Lists;
 
 public class TransactionalList<T> : List<T>
 {

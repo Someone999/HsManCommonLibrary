@@ -1,7 +1,7 @@
-using CommonLibrary.Logger.LoggerFactories;
-using CommonLibrary.Logger.Loggers;
+using HsManCommonLibrary.Logger.LoggerFactories;
+using HsManCommonLibrary.Logger.Loggers;
 
-namespace CommonLibrary.Logger;
+namespace HsManCommonLibrary.Logger;
 
 public class LoggingEvent
 {

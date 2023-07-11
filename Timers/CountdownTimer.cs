@@ -1,8 +1,6 @@
-using System.Data;
 using System.Diagnostics;
-using System.Net;
 
-namespace CommonLibrary.Timers;
+namespace HsManCommonLibrary.Timers;
 
 public class CountdownTimer : ITimer
 {

@@ -1,8 +1,8 @@
-using CommonLibrary.ConfigElements.ConfigAdapters;
-using CommonLibrary.ConfigElements.ConfigConverters;
-using CommonLibrary.Locks;
+using HsManCommonLibrary.ConfigElements.ConfigAdapters;
+using HsManCommonLibrary.ConfigElements.ConfigConverters;
+using HsManCommonLibrary.Locks;
 
-namespace CommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.ConfigElements;
 
 public class CommonConfigElement : IConfigElement
 {

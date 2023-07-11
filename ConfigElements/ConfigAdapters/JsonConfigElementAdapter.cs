@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace CommonLibrary.ConfigElements.ConfigAdapters;
+namespace HsManCommonLibrary.ConfigElements.ConfigAdapters;
 
 public class JsonConfigElementAdapter : IConfigElementAdapter
 {

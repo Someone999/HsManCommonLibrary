@@ -1,4 +1,4 @@
-namespace CommonLibrary.Logger.Renderers;
+namespace HsManCommonLibrary.Logger.Renderers;
 
 public interface IStringRenderer
 {

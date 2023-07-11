@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace CommonLibrary.Logger.Renderers;
+namespace HsManCommonLibrary.Logger.Renderers;
 
 public class ColoredStringContainer : IEnumerable<ColoredString>
 {

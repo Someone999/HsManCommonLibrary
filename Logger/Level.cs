@@ -1,4 +1,4 @@
-namespace CommonLibrary.Logger;
+namespace HsManCommonLibrary.Logger;
 
 public class Level
 {

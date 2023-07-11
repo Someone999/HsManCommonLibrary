@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace CommonLibrary.Counters;
+namespace HsManCommonLibrary.Counters;
 
 public class EventCounter
 {

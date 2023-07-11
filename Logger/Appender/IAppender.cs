@@ -1,6 +1,6 @@
-using CommonLibrary.Logger.Renderers;
+using HsManCommonLibrary.Logger.Renderers;
 
-namespace CommonLibrary.Logger.Appender;
+namespace HsManCommonLibrary.Logger.Appender;
 
 public interface IAppender
 {

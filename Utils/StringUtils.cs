@@ -1,7 +1,7 @@
 using System.Text;
 using Org.BouncyCastle.Security;
 
-namespace CommonLibrary.Utils;
+namespace HsManCommonLibrary.Utils;
 
 public static class StringUtils
 {

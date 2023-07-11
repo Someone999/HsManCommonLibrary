@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace CommonLibrary.Reflections;
+namespace HsManCommonLibrary.Reflections;
 
 public class AssemblyTypeCollection : IEnumerable<Type>
 {

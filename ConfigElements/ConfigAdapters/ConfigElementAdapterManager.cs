@@ -1,6 +1,6 @@
-using CommonLibrary.Reflections;
+using HsManCommonLibrary.Reflections;
 
-namespace CommonLibrary.ConfigElements.ConfigAdapters;
+namespace HsManCommonLibrary.ConfigElements.ConfigAdapters;
 
 public static class ConfigElementAdapterManager
 {

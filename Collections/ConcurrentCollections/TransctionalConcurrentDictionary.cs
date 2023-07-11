@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using CommonLibrary.Collections.Transactional;
-using CommonLibrary.Collections.Transactional.Dictionaries;
-using CommonLibrary.Exceptions;
+using HsManCommonLibrary.Collections.Transactional;
+using HsManCommonLibrary.Collections.Transactional.Dictionaries;
+using HsManCommonLibrary.Exceptions;
 
-namespace CommonLibrary.Collections.ConcurrentCollections;
+namespace HsManCommonLibrary.Collections.ConcurrentCollections;
 
 public class TransactionalConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, TValue> where TKey : notnull
 {

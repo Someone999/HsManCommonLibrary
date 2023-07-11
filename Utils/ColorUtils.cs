@@ -1,6 +1,6 @@
-using CommonLibrary.Logger.Renderers;
+using HsManCommonLibrary.Logger.Renderers;
 
-namespace CommonLibrary.Utils;
+namespace HsManCommonLibrary.Utils;
 
 public static class ColorUtils
 {

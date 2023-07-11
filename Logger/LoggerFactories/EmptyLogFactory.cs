@@ -1,8 +1,8 @@
-using CommonLibrary.Logger.Appender;
-using CommonLibrary.Logger.Loggers;
-using CommonLibrary.Logger.Serializers;
+using HsManCommonLibrary.Logger.Appender;
+using HsManCommonLibrary.Logger.Loggers;
+using HsManCommonLibrary.Logger.Serializers;
 
-namespace CommonLibrary.Logger.LoggerFactories;
+namespace HsManCommonLibrary.Logger.LoggerFactories;
 
 public class EmptyLogFactory : ILoggerFactory
 {

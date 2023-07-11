@@ -1,4 +1,4 @@
-namespace CommonLibrary.Collections.Transactional.Lists;
+namespace HsManCommonLibrary.Collections.Transactional.Lists;
 
 public enum CompareFlag
 {

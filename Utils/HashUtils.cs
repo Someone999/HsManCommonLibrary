@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace CommonLibrary.Utils;
+namespace HsManCommonLibrary.Utils;
 
 public static class HashUtils
 {

@@ -1,6 +1,6 @@
-using CommonLibrary.Logger.Renderers;
+using HsManCommonLibrary.Logger.Renderers;
 
-namespace CommonLibrary.Logger.Serializers;
+namespace HsManCommonLibrary.Logger.Serializers;
 
 public class EmptyLevelSerializer : IObjectSerializer<Level>
 {

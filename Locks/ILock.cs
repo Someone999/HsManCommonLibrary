@@ -1,6 +1,4 @@
-using System.Diagnostics;
-
-namespace CommonLibrary.Locks;
+namespace HsManCommonLibrary.Locks;
 
 public interface ILock
 {

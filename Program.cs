@@ -1,6 +1,6 @@
-using CommonLibrary.Timers;
+using HsManCommonLibrary.Timers;
 
-namespace CommonLibrary;
+namespace HsManCommonLibrary;
 
 class Program
 {

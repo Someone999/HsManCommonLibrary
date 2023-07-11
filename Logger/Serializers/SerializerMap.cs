@@ -1,4 +1,4 @@
-namespace CommonLibrary.Logger.Serializers;
+namespace HsManCommonLibrary.Logger.Serializers;
 
 public class SerializerMap
 {

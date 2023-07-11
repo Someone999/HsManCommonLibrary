@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace CommonLibrary.Utils;
+namespace HsManCommonLibrary.Utils;
 
 public static class EqualityUtils
 {

@@ -1,6 +1,6 @@
-using CommonLibrary.Exceptions;
+using HsManCommonLibrary.Exceptions;
 
-namespace CommonLibrary.Collections.Transactional.Dictionaries;
+namespace HsManCommonLibrary.Collections.Transactional.Dictionaries;
 
 public class TransactionalDictionary<TKey, TValue> : Dictionary<TKey, TValue> where TKey: notnull
 {

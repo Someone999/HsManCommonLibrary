@@ -1,4 +1,4 @@
-namespace CommonLibrary.ConfigElements.ConfigAdapters;
+namespace HsManCommonLibrary.ConfigElements.ConfigAdapters;
 
 public interface IConfigElementAdapter
 {

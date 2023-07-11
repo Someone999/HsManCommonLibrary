@@ -1,6 +1,6 @@
-using CommonLibrary.BindableValues;
+using HsManCommonLibrary.BindableValues;
 
-namespace CommonLibrary.Utils;
+namespace HsManCommonLibrary.Utils;
 
 public static class BindableValueUtils
 {

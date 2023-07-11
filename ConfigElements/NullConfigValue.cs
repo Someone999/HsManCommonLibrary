@@ -1,4 +1,4 @@
-namespace CommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.ConfigElements;
 
 public class NullConfigValue
 {

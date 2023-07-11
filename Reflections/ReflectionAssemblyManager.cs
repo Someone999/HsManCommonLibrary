@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace CommonLibrary.Reflections;
+namespace HsManCommonLibrary.Reflections;
 
 public static class ReflectionAssemblyManager
 {

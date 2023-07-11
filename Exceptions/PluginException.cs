@@ -1,4 +1,4 @@
-namespace CommonLibrary.Exceptions;
+namespace HsManCommonLibrary.Exceptions;
 
 public abstract class PluginException : Exception
 {

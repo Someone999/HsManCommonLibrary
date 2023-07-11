@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace CommonLibrary.Locks;
+namespace HsManCommonLibrary.Locks;
 
 public class LockManager
 {

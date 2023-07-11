@@ -1,4 +1,4 @@
-namespace CommonLibrary.ConfigElements.ConfigConverters;
+namespace HsManCommonLibrary.ConfigElements.ConfigConverters;
 
 public interface IConfigConverter
 {

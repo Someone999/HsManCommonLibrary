@@ -1,6 +1,6 @@
-using CommonLibrary.ConfigElements.ConfigConverters;
+using HsManCommonLibrary.ConfigElements.ConfigConverters;
 
-namespace CommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.ConfigElements;
 
 public interface IConfigElement
 {

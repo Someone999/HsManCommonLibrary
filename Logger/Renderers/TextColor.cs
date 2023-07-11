@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace CommonLibrary.Logger.Renderers;
+namespace HsManCommonLibrary.Logger.Renderers;
 
 public struct TextColor : IEquatable<TextColor>
 {

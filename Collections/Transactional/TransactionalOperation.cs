@@ -1,4 +1,4 @@
-namespace CommonLibrary.Collections.Transactional;
+namespace HsManCommonLibrary.Collections.Transactional;
 
 public enum TransactionalOperation
 {

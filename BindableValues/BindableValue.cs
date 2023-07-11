@@ -1,4 +1,4 @@
-namespace CommonLibrary.BindableValues;
+namespace HsManCommonLibrary.BindableValues;
 
 public class BindableValue<T> : IBindableValue<T>
 {

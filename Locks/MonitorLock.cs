@@ -1,4 +1,4 @@
-namespace CommonLibrary.Locks;
+namespace HsManCommonLibrary.Locks;
 
 public class MonitorLock : IMutexLock
 {

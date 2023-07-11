@@ -1,4 +1,4 @@
-namespace CommonLibrary.Timers;
+namespace HsManCommonLibrary.Timers;
 
 public class TimerElapsedEventArgs
 {
