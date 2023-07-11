@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLibrary", "CommonLibrary.csproj", "{9B7B94DC-E467-420D-B7C0-5D666D3F3ED1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HsManCommonLibrary", "HsManCommonLibrary.csproj", "{9B7B94DC-E467-420D-B7C0-5D666D3F3ED1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
