@@ -7,41 +7,55 @@ public class TransactionalDictionary<TKey, TValue> : Dictionary<TKey, TValue> wh
     private List<TransactionalDictionaryOperation<TKey, TValue>> _pendingOperations =
         new List<TransactionalDictionaryOperation<TKey, TValue>>();
 
+    private readonly object _locker = new object();
+
     public void AddTransactionalOperation(TransactionalDictionaryOperation<TKey, TValue> operation)
     {
-        _pendingOperations.Add(operation);
+        lock (_locker)
+        {
+            _pendingOperations.Add(operation);
+        }
     }
         
     public void Commit()
     {
-        foreach (var operation in _pendingOperations)
+
+        lock (_locker)
         {
-            switch (operation.Operation)
+            foreach (var operation in _pendingOperations)
             {
-                case TransactionalOperation.Add:
-                    if (operation.Key == null || operation.Value == null)
-                    {
-                        throw new InvalidTransactionalOperationException("Key and value can not be null");
-                    }
+                switch (operation.Operation)
+                {
+                    case TransactionalOperation.Add:
+                        if (operation.Key == null || operation.Value == null)
+                        {
+                            throw new InvalidTransactionalOperationException("Key and value can not be null");
+                        }
                     
-                    Add(operation.Key, operation.Value);
-                    break;
-                case TransactionalOperation.Remove:
-                    if (operation.Key == null)
-                    {
-                        throw new InvalidTransactionalOperationException("Key can not be null");
-                    }
-                    Remove(operation.Key);
-                    break;
-                case TransactionalOperation.Clear:
-                    Clear();
-                    break;
+                        Add(operation.Key, operation.Value);
+                        break;
+                    case TransactionalOperation.Remove:
+                        if (operation.Key == null)
+                        {
+                            throw new InvalidTransactionalOperationException("Key can not be null");
+                        }
+                        Remove(operation.Key);
+                        break;
+                    case TransactionalOperation.Clear:
+                        Clear();
+                        break;
+                }
             }
+        
+            _pendingOperations.Clear();
         }
     }
 
     public void Rollback()
     {
-        _pendingOperations.Clear();
+        lock (_locker)
+        {
+            _pendingOperations.Clear();
+        }
     }
 }

@@ -10,41 +10,51 @@ public class TransactionalConcurrentDictionary<TKey, TValue> : ConcurrentDiction
     private ConcurrentBag<TransactionalDictionaryOperation<TKey, TValue>> _pendingOperations =
         new ConcurrentBag<TransactionalDictionaryOperation<TKey, TValue>>();
 
+    private readonly object _locker = new object();
     public void AddTransactionalOperation(TransactionalDictionaryOperation<TKey, TValue> operation)
     {
-        _pendingOperations.Add(operation);
+        lock (_locker)
+        {
+            _pendingOperations.Add(operation);
+        }
     }
         
     public void Commit()
     {
-        foreach (var operation in _pendingOperations)
+        lock (_locker)
         {
-            switch (operation.Operation)
+            foreach (var operation in _pendingOperations)
             {
-                case TransactionalOperation.Add:
-                    if (operation.Key == null || operation.Value == null)
-                    {
-                        throw new InvalidTransactionalOperationException("Key and value can not be null");
-                    }
+                switch (operation.Operation)
+                {
+                    case TransactionalOperation.Add:
+                        if (operation.Key == null || operation.Value == null)
+                        {
+                            throw new InvalidTransactionalOperationException("Key and value can not be null");
+                        }
                     
-                    TryAdd(operation.Key, operation.Value);
-                    break;
-                case TransactionalOperation.Remove:
-                    if (operation.Key == null)
-                    {
-                        throw new InvalidTransactionalOperationException("Key can not be null");
-                    }
-                    TryRemove(operation.Key, out _);
-                    break;
-                case TransactionalOperation.Clear:
-                    Clear();
-                    break;
+                        TryAdd(operation.Key, operation.Value);
+                        break;
+                    case TransactionalOperation.Remove:
+                        if (operation.Key == null)
+                        {
+                            throw new InvalidTransactionalOperationException("Key can not be null");
+                        }
+                        TryRemove(operation.Key, out _);
+                        break;
+                    case TransactionalOperation.Clear:
+                        Clear();
+                        break;
+                }
             }
         }
     }
 
     public void Rollback()
     {
-        _pendingOperations = new ConcurrentBag<TransactionalDictionaryOperation<TKey, TValue>>();
+        lock (_locker)
+        {
+            _pendingOperations = new ConcurrentBag<TransactionalDictionaryOperation<TKey, TValue>>();
+        }
     }
 }
