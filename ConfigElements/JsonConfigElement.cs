@@ -1,4 +1,4 @@
-using HsManCommonLibrary.BindableValues;
+using HsManCommonLibrary.ValueHolders;
 using HsManCommonLibrary.ConfigElements.ConfigConverters;
 using HsManCommonLibrary.Locks;
 using Newtonsoft.Json;
@@ -7,7 +7,7 @@ namespace HsManCommonLibrary.ConfigElements;
 
 public class JsonConfigElement : IConfigElement
 {
-    private BindableValue<Dictionary<string, object>> _config;
+    private ValueHolder<Dictionary<string, object>> _config;
     private LockManager _lockManager = new LockManager();
         
     public JsonConfigElement(string jsonFile)
@@ -20,7 +20,7 @@ public class JsonConfigElement : IConfigElement
                 throw new InvalidOperationException();
             }
 
-            _config = new BindableValue<Dictionary<string, object>>(dict);
+            _config = new ValueHolder<Dictionary<string, object>>(dict);
 
         }
     }

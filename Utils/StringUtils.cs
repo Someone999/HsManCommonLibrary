@@ -1,5 +1,4 @@
 using System.Text;
-using Org.BouncyCastle.Security;
 
 namespace HsManCommonLibrary.Utils;
 
@@ -36,15 +35,15 @@ public static class StringUtils
     }
     public static string GenerateRandomString(int size)
     {
-        SecureRandom secureRandom = new SecureRandom();
+        Random random = new Random();
         StringBuilder stringBuilder = new StringBuilder();
         char lastChar = '\0';
         for (int i = 0; i < size; i++)
         {
-            char asciiChar = (char)secureRandom.Next(0, 127);
+            char asciiChar = (char)random.Next(0, 127);
             while (asciiChar == lastChar || !IsAcceptableSaltCharacter(asciiChar))
             {
-                asciiChar = (char)secureRandom.Next(0, 127);
+                asciiChar = (char)random.Next(0, 127);
             }
 
             stringBuilder.Append(asciiChar);

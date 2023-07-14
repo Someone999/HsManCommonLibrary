@@ -95,14 +95,16 @@ public class TransactionalList<T> : List<T>
                                 Sort();
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                throw new InvalidTransactionalOperationException(
+                                    "Invalid CompareFlag.");
                         }
                         break;
                     case TransactionalOperation.Clear:
                         Clear();
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidTransactionalOperationException(
+                            $"This collection doesn't support operation {operation.Operation}");
                 }
             }
             

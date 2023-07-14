@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace HsManCommonLibrary.BindableValues;
+namespace HsManCommonLibrary.ValueHolders;
 
 public static class EqualityUtils
 {

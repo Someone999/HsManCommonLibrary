@@ -1,6 +1,6 @@
-namespace HsManCommonLibrary.BindableValues;
+namespace HsManCommonLibrary.ValueHolders;
 
-public interface IBindableValue
+public interface IValueHolder
 {
     object? DefaultValue { get; }
     object? Value { get; }
@@ -8,7 +8,7 @@ public interface IBindableValue
     bool IsInitialized();
 }
 
-public interface IBindableValue<T> : IBindableValue
+public interface IValueHolder<T> : IValueHolder
 {
     event Action<ValueChangedEventArgs<T>> OnValueChanged;  
     new T? DefaultValue { get; }

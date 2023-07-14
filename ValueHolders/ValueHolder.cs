@@ -1,20 +1,20 @@
-namespace HsManCommonLibrary.BindableValues;
+namespace HsManCommonLibrary.ValueHolders;
 
-public class BindableValue<T> : IBindableValue<T>
+public class ValueHolder<T> : IValueHolder<T>
 {
     private bool _initialized;
-    public BindableValue(T defaultValue, T value)
+    public ValueHolder(T defaultValue, T value)
     {
         DefaultValue = defaultValue;
         _value = value;
     }
 
-    public BindableValue(T value)
+    public ValueHolder(T value)
     {
         _value = value;
     }
         
-    public BindableValue()
+    public ValueHolder()
     {
     }
         
@@ -74,6 +74,6 @@ public class BindableValue<T> : IBindableValue<T>
     public bool IsInitialized() => _initialized;
        
 
-    object? IBindableValue.DefaultValue => DefaultValue;
-    object? IBindableValue.Value => Value;
+    object? IValueHolder.DefaultValue => DefaultValue;
+    object? IValueHolder.Value => Value;
 }

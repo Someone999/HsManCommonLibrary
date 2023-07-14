@@ -1,4 +1,4 @@
-namespace HsManCommonLibrary.BindableValues;
+namespace HsManCommonLibrary.ValueHolders;
 
 public class ValueChangedEventArgs<T>
 {

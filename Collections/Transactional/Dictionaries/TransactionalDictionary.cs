@@ -44,6 +44,9 @@ public class TransactionalDictionary<TKey, TValue> : Dictionary<TKey, TValue> wh
                     case TransactionalOperation.Clear:
                         Clear();
                         break;
+                    default:
+                        throw new InvalidTransactionalOperationException(
+                            $"This collection doesn't support operation {operation.Operation}");
                 }
             }
         

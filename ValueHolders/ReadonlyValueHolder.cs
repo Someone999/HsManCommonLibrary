@@ -1,23 +1,23 @@
-namespace HsManCommonLibrary.BindableValues;
+namespace HsManCommonLibrary.ValueHolders;
 
-public class ReadonlyBindableValue<T> : IReadonlyBindableValue<T>
+public class ReadonlyValueHolder<T> : IReadonlyValueHolder<T>
 {
-    public ReadonlyBindableValue(T? value)
+    public ReadonlyValueHolder(T? value)
     {
         Value = value;
         _initialized = Value != null;
     }
 
-    public ReadonlyBindableValue(T? value, T? defaultValue)
+    public ReadonlyValueHolder(T? value, T? defaultValue)
     {
         Value = value;
         DefaultValue = defaultValue;
         _initialized = Value != null && !Value.Equals(defaultValue);
     }
 
-    private bool _initialized;
+    private readonly bool _initialized;
     
-    object? IBindableValue.DefaultValue => DefaultValue;
+    object? IValueHolder.DefaultValue => DefaultValue;
 
     public T? Value { get; }
     public void BindValue(T value)
@@ -27,7 +27,7 @@ public class ReadonlyBindableValue<T> : IReadonlyBindableValue<T>
 
     public T? DefaultValue { get; }
 
-    object? IBindableValue.Value => Value;
+    object? IValueHolder.Value => Value;
 
     public TVal GetValueAs<TVal>()
     {
