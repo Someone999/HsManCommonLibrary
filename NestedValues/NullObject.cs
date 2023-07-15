@@ -1,8 +1,8 @@
 namespace HsManCommonLibrary.NestedValues;
 
-public class NullConfigValue
+public class NullObject
 {
-    private NullConfigValue()
+    private NullObject()
     {
     }
 
@@ -12,5 +12,5 @@ public class NullConfigValue
 
     public override string ToString() => "";
 
-    public static NullConfigValue Value { get; } = new NullConfigValue();
+    public static NullObject Value { get; } = new NullObject();
 }

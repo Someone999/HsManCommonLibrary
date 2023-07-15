@@ -29,7 +29,17 @@ public class JsonConfigElement : INestedValueStore
     {
         return _config.Value;
     }
-        
+
+    public T GetValueAs<T>()
+    {
+        if (typeof(T) != typeof(Dictionary<string, object>))
+        {
+            throw new InvalidCastException();
+        }
+
+        return (T)(object)_config.Value;
+    }
+
     private INestedValueStore GetConfigElement(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))

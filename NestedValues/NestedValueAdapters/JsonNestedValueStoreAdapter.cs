@@ -9,16 +9,16 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
         switch (obj)
         { 
             case JObject jObject:
-                object jsonDict = jObject.ToObject<Dictionary<string, object>>() ?? (object)NullConfigValue.Value;
+                object jsonDict = jObject.ToObject<Dictionary<string, object>>() ?? (object)NullObject.Value;
                 return new CommonNestedValueStore(jsonDict);
             case JProperty property:
                 return new CommonNestedValueStore(property.Value);
             case JValue value:
-                object val = value.Value ?? NullConfigValue.Value;
+                object val = value.Value ?? NullObject.Value;
 
                 return new CommonNestedValueStore(val);
             case JArray array:
-                object val1 = array.ToObject<List<object>>() ?? (object)NullConfigValue.Value;
+                object val1 = array.ToObject<List<object>>() ?? (object)NullObject.Value;
                 return new CommonNestedValueStore(val1);
             default: throw new InvalidCastException();
         }

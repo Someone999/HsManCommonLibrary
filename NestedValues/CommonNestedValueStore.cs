@@ -33,6 +33,11 @@ public class CommonNestedValueStore : INestedValueStore
         return _innerVal;
     }
 
+    public T GetValueAs<T>()
+    {
+        return (T)_innerVal;
+    }
+
     public void SetValue(string key, INestedValueStore val)
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
@@ -84,6 +89,6 @@ public class CommonNestedValueStore : INestedValueStore
 
     public bool IsNull(string key)
     {
-        return Equals(_innerVal, NullConfigValue.Value);
+        return Equals(_innerVal, NullObject.Value);
     }
 }
