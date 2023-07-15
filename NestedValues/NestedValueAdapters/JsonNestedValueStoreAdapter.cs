@@ -1,25 +1,25 @@
 using Newtonsoft.Json.Linq;
 
-namespace HsManCommonLibrary.ConfigElements.ConfigAdapters;
+namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
-public class JsonConfigElementAdapter : IConfigElementAdapter
+public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
 {
-    public IConfigElement ToConfigElement(object? obj)
+    public INestedValueStore ToConfigElement(object? obj)
     {
         switch (obj)
         { 
             case JObject jObject:
                 object jsonDict = jObject.ToObject<Dictionary<string, object>>() ?? (object)NullConfigValue.Value;
-                return new CommonConfigElement(jsonDict);
+                return new CommonNestedValueStore(jsonDict);
             case JProperty property:
-                return new CommonConfigElement(property.Value);
+                return new CommonNestedValueStore(property.Value);
             case JValue value:
                 object val = value.Value ?? NullConfigValue.Value;
 
-                return new CommonConfigElement(val);
+                return new CommonNestedValueStore(val);
             case JArray array:
                 object val1 = array.ToObject<List<object>>() ?? (object)NullConfigValue.Value;
-                return new CommonConfigElement(val1);
+                return new CommonNestedValueStore(val1);
             default: throw new InvalidCastException();
         }
     }

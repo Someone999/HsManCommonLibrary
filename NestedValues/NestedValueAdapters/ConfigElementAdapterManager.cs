@@ -1,6 +1,6 @@
 using HsManCommonLibrary.Reflections;
 
-namespace HsManCommonLibrary.ConfigElements.ConfigAdapters;
+namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
 public static class ConfigElementAdapterManager
 {
@@ -8,7 +8,7 @@ public static class ConfigElementAdapterManager
     {
         Init();
     }
-    private static Dictionary<Type, IConfigElementAdapter>? _adapters;
+    private static Dictionary<Type, INestedValueStoreAdapter>? _adapters;
     private static readonly object StaticLocker = new object();
 
     private static void Init()
@@ -20,9 +20,9 @@ public static class ConfigElementAdapterManager
                 return;
             }
 
-            _adapters = new Dictionary<Type, IConfigElementAdapter>();
+            _adapters = new Dictionary<Type, INestedValueStoreAdapter>();
             var types = 
-                ReflectionAssemblyManager.CreateAssemblyTypeCollection().GetSubTypesOf<IConfigElementAdapter>();
+                ReflectionAssemblyManager.CreateAssemblyTypeCollection().GetSubTypesOf<INestedValueStoreAdapter>();
 
             foreach (var type in types)
             {
@@ -32,29 +32,29 @@ public static class ConfigElementAdapterManager
                     continue;
                 }
                 
-                _adapters.Add(type, (IConfigElementAdapter) ins);
+                _adapters.Add(type, (INestedValueStoreAdapter) ins);
             }
         }
             
     }
 
-    public static IConfigElementAdapter GetAdapterByAdaptableType(Type t)
+    public static INestedValueStoreAdapter GetAdapterByAdaptableType(Type t)
     {
         return _adapters?.Values.FirstOrDefault(adaptersValue => adaptersValue.CanConvert(t)) 
                ?? throw new KeyNotFoundException();
     }
         
-    public static IConfigElementAdapter GetAdapterByAdaptableType<T>()
+    public static INestedValueStoreAdapter GetAdapterByAdaptableType<T>()
     {
         return GetAdapterByAdaptableType(typeof(T));
     }
 
-    public static IConfigElementAdapter GetAdapterByAdapterType(Type t)
+    public static INestedValueStoreAdapter GetAdapterByAdapterType(Type t)
     {
         return _adapters?[t] ?? throw new KeyNotFoundException();
     }
         
-    public static IConfigElementAdapter GetAdapterByAdapterType<T>()
+    public static INestedValueStoreAdapter GetAdapterByAdapterType<T>()
     {
         return GetAdapterByAdaptableType(typeof(T));
     }

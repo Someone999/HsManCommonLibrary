@@ -1,27 +1,27 @@
-using HsManCommonLibrary.ConfigElements.ConfigAdapters;
-using HsManCommonLibrary.ConfigElements.ConfigConverters;
 using HsManCommonLibrary.Locks;
+using HsManCommonLibrary.NestedValues.NestedValueAdapters;
+using HsManCommonLibrary.NestedValues.NestedValueConverters;
 
-namespace HsManCommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.NestedValues;
 
-public class CommonConfigElement : IConfigElement
+public class CommonNestedValueStore : INestedValueStore
 {
     private readonly object _innerVal;
     private LockManager _lockManager = new LockManager();
 
-    public CommonConfigElement(object innerVal)
+    public CommonNestedValueStore(object innerVal)
     {
         _innerVal = innerVal;
     }
 
-    private IConfigElement GetConfigElement(string key)
+    private INestedValueStore GetConfigElement(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
             return _innerVal switch
             {
-                Dictionary<string, IConfigElement> dictionary => dictionary[key],
-                Dictionary<string, object> objDict => new CommonConfigElement(objDict[key]),
+                Dictionary<string, INestedValueStore> dictionary => dictionary[key],
+                Dictionary<string, object> objDict => new CommonNestedValueStore(objDict[key]),
                 _ => ConfigElementAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())
                     .ToConfigElement(_innerVal)[key]
             };
@@ -33,11 +33,11 @@ public class CommonConfigElement : IConfigElement
         return _innerVal;
     }
 
-    public void SetValue(string key, IConfigElement val)
+    public void SetValue(string key, INestedValueStore val)
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
         {
-            if (_innerVal is Dictionary<string, IConfigElement> dictionary)
+            if (_innerVal is Dictionary<string, INestedValueStore> dictionary)
             {
                 dictionary[key] = val;
             }
@@ -46,7 +46,7 @@ public class CommonConfigElement : IConfigElement
         }
     }
 
-    public IConfigElement this[string key]
+    public INestedValueStore this[string key]
     {
         get => GetConfigElement(key);
         set => SetValue(key, value);
@@ -65,7 +65,7 @@ public class CommonConfigElement : IConfigElement
     public T Convert<T>() => (T) Convert(typeof(T));
        
 
-    public object ConvertWith(IConfigConverter converter)
+    public object ConvertWith(INestedValueStoreConverter converter)
     {
         lock (_lockManager.AcquireLockObject("ConvertWith"))
         {
@@ -73,7 +73,7 @@ public class CommonConfigElement : IConfigElement
         }
     }
 
-    public T ConvertWith<T>(IConfigConverter<T> converter)
+    public T ConvertWith<T>(INestedValueStoreConverter<T> converter)
     {
         lock (_lockManager.AcquireLockObject("ConvertWith<T>"))
         {

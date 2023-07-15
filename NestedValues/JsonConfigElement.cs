@@ -1,11 +1,11 @@
-using HsManCommonLibrary.ValueHolders;
-using HsManCommonLibrary.ConfigElements.ConfigConverters;
 using HsManCommonLibrary.Locks;
+using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.ValueHolders;
 using Newtonsoft.Json;
 
-namespace HsManCommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.NestedValues;
 
-public class JsonConfigElement : IConfigElement
+public class JsonConfigElement : INestedValueStore
 {
     private ValueHolder<Dictionary<string, object>> _config;
     private LockManager _lockManager = new LockManager();
@@ -30,29 +30,29 @@ public class JsonConfigElement : IConfigElement
         return _config.Value;
     }
         
-    private IConfigElement GetConfigElement(string key)
+    private INestedValueStore GetConfigElement(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
             var val = _config.Value[key];
             return val switch
             {
-                IConfigElement configElement => configElement[key],
-                { } => new CommonConfigElement(val),
+                INestedValueStore configElement => configElement[key],
+                { } => new CommonNestedValueStore(val),
                 _ => throw new InvalidCastException()
             };
         }
     }
     
-    public void SetValue(string key, IConfigElement val)
+    public void SetValue(string key, INestedValueStore val)
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
         {
-            _config.Value[key] = new CommonConfigElement(val);
+            _config.Value[key] = new CommonNestedValueStore(val);
         }
     }
 
-    public IConfigElement this[string key]
+    public INestedValueStore this[string key]
     {
         get => GetConfigElement(key);
         set => SetValue(key, value);
@@ -65,7 +65,7 @@ public class JsonConfigElement : IConfigElement
 
     public T Convert<T>()
     {
-        if (typeof(T) != typeof(Dictionary<string, IConfigElement>))
+        if (typeof(T) != typeof(Dictionary<string, INestedValueStore>))
         {
             throw new InvalidCastException();
         }
@@ -73,14 +73,14 @@ public class JsonConfigElement : IConfigElement
         return (T)(object)_config.Value;
     }
 
-    public object ConvertWith(IConfigConverter converter)
+    public object ConvertWith(INestedValueStoreConverter converter)
     {
         throw new InvalidCastException();
     }
 
-    public T ConvertWith<T>(IConfigConverter<T> converter)
+    public T ConvertWith<T>(INestedValueStoreConverter<T> converter)
     {
-        if (typeof(T) != typeof(Dictionary<string, IConfigElement>))
+        if (typeof(T) != typeof(Dictionary<string, INestedValueStore>))
         {
             throw new InvalidCastException();
         }

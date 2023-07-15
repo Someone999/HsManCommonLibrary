@@ -1,4 +1,4 @@
-namespace HsManCommonLibrary.ConfigElements;
+namespace HsManCommonLibrary.NestedValues;
 
 public class NullConfigValue
 {
