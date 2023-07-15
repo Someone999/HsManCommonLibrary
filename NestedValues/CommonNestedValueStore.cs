@@ -22,7 +22,7 @@ public class CommonNestedValueStore : INestedValueStore
             {
                 Dictionary<string, INestedValueStore> dictionary => dictionary[key],
                 Dictionary<string, object> objDict => new CommonNestedValueStore(objDict[key]),
-                _ => ConfigElementAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())
+                _ => NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())
                     .ToConfigElement(_innerVal)[key]
             };
         }

@@ -2,9 +2,9 @@ using HsManCommonLibrary.Reflections;
 
 namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
-public static class ConfigElementAdapterManager
+public static class NestedValueAdapterManager
 {
-    static ConfigElementAdapterManager()
+    static NestedValueAdapterManager()
     {
         Init();
     }
