@@ -7,7 +7,8 @@
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>CommonLibrary</Title>
-        <Version>1.0.5</Version>
+        <Version>1.0.10</Version>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,6 +26,10 @@
 
     <ItemGroup>
       <None Remove="protos\**" />
+
     </ItemGroup>
+
+
+
 
 </Project>

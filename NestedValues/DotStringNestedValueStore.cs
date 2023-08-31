@@ -1,4 +1,5 @@
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
 
 namespace HsManCommonLibrary.NestedValues;
 
@@ -102,5 +103,10 @@ public class DotStringNestedValueStore : INestedValueStore
     public bool IsNull(string key)
     {
         return _nestedValue[key].GetValue().Equals(NullObject.Value);
+    }
+    
+    public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
+    {
+        return storeDeserializer.Deserialize(this);
     }
 }

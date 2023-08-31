@@ -1,4 +1,5 @@
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
 
 namespace HsManCommonLibrary.NestedValues;
 
@@ -13,6 +14,7 @@ public interface INestedValueStore
     object ConvertWith(INestedValueStoreConverter converter);
     T ConvertWith<T>(INestedValueStoreConverter<T> converter);
     bool IsNull(string key);
+    T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer);
 }
 
 

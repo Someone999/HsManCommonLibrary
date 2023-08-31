@@ -7,11 +7,13 @@ public class ValueHolder<T> : IValueHolder<T>
     {
         DefaultValue = defaultValue;
         _value = value;
+        _initialized = value is not null;
     }
 
     public ValueHolder(T value)
     {
         _value = value;
+        _initialized = value is not null;
     }
         
     public ValueHolder()

@@ -1,3 +1,4 @@
+using HsManCommonLibrary.Exceptions;
 using HsManCommonLibrary.Reflections;
 
 namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
@@ -38,24 +39,35 @@ public static class NestedValueAdapterManager
             
     }
 
-    public static INestedValueStoreAdapter GetAdapterByAdaptableType(Type t)
+    public static INestedValueStoreAdapter? GetAdapterByAdaptableType(Type t)
     {
-        return _adapters?.Values.FirstOrDefault(adaptersValue => adaptersValue.CanConvert(t)) 
-               ?? throw new KeyNotFoundException();
+        if (_adapters == null)
+        {
+            throw new HsManInternalException("Field was failed to init");
+        }
+
+        return  _adapters.Values.FirstOrDefault(adaptersValue => adaptersValue.CanConvert(t));
     }
         
-    public static INestedValueStoreAdapter GetAdapterByAdaptableType<T>()
+    public static INestedValueStoreAdapter? GetAdapterByAdaptableType<T>()
     {
         return GetAdapterByAdaptableType(typeof(T));
     }
 
-    public static INestedValueStoreAdapter GetAdapterByAdapterType(Type t)
+    public static INestedValueStoreAdapter? GetAdapterByAdapterType(Type t)
     {
-        return _adapters?[t] ?? throw new KeyNotFoundException();
+        if (_adapters == null)
+        {
+            throw new HsManInternalException("Field was failed to init");
+        }
+
+        return !_adapters.ContainsKey(t) ? null : _adapters[t];
     }
         
-    public static INestedValueStoreAdapter GetAdapterByAdapterType<T>()
+    public static INestedValueStoreAdapter? GetAdapterByAdapterType<T>()
     {
-        return GetAdapterByAdaptableType(typeof(T));
+        return GetAdapterByAdapterType(typeof(T));
     }
+
+    
 }

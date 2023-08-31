@@ -1,6 +1,7 @@
 using HsManCommonLibrary.Locks;
 using HsManCommonLibrary.NestedValues.NestedValueAdapters;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
 
 namespace HsManCommonLibrary.NestedValues;
 
@@ -18,13 +19,18 @@ public class CommonNestedValueStore : INestedValueStore
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
-            return _innerVal switch
+            switch (_innerVal)
             {
-                Dictionary<string, INestedValueStore> dictionary => dictionary[key],
-                Dictionary<string, object> objDict => new CommonNestedValueStore(objDict[key]),
-                _ => NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())
-                    .ToConfigElement(_innerVal)[key]
-            };
+                case Dictionary<string, INestedValueStore> dictionary:
+                    return dictionary[key];
+                case Dictionary<string, object> objDict:
+                    return new CommonNestedValueStore(objDict[key]);
+                default:
+                        var r = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())?
+                            .ToNestedValue(_innerVal)[key];
+
+                    return new CommonNestedValueStore(r ?? _innerVal);
+            }
         }
     }
         
@@ -42,12 +48,22 @@ public class CommonNestedValueStore : INestedValueStore
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
         {
-            if (_innerVal is Dictionary<string, INestedValueStore> dictionary)
+            
+            var tmpValue = _innerVal;
+            var adapter = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType());
+            if (adapter != null)
             {
-                dictionary[key] = val;
+                tmpValue = adapter.ToNestedValue(_innerVal).GetValue();
             }
+            
 
-            throw new InvalidOperationException();
+
+            if (tmpValue is not Dictionary<string, INestedValueStore> dictionary)
+            {
+                throw new InvalidOperationException();
+            }
+            
+            dictionary[key] = val;
         }
     }
 
@@ -91,4 +107,10 @@ public class CommonNestedValueStore : INestedValueStore
     {
         return Equals(_innerVal, NullObject.Value);
     }
+
+    public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
+    {
+        return storeDeserializer.Deserialize(this);
+    }
+    
 }

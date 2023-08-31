@@ -1,6 +1,6 @@
 namespace HsManCommonLibrary.NestedValues;
 
-public interface IPersistableNestedValueStore
+public interface IPersistableNestedValueStore : INestedValueStore
 {
-    void Persistence();
+    void Persistence(string path);
 }

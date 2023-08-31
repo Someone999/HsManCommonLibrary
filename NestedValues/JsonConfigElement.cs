@@ -1,26 +1,31 @@
 using HsManCommonLibrary.Locks;
+using HsManCommonLibrary.NestedValues.NestedValueAdapters;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
 using HsManCommonLibrary.ValueHolders;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace HsManCommonLibrary.NestedValues;
 
-public class JsonConfigElement : INestedValueStore
+public class JsonConfigElement : IPersistableNestedValueStore
 {
-    private ValueHolder<Dictionary<string, object>> _config;
-    private LockManager _lockManager = new LockManager();
+    private readonly ValueHolder<INestedValueStore> _config;
+    private readonly LockManager _lockManager = new LockManager();
         
     public JsonConfigElement(string jsonFile)
     {
         lock (_lockManager.AcquireLockObject(".ctor"))
         {
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(File.ReadAllText(jsonFile));
-            if (dict == null)
+            var dict = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(jsonFile));
+            JsonNestedValueStoreAdapter adapter = new JsonNestedValueStoreAdapter();
+            var adapted = adapter.ToNestedValue(dict);
+            if (adapted == null)
             {
                 throw new InvalidOperationException();
             }
 
-            _config = new ValueHolder<Dictionary<string, object>>(dict);
+            _config = new ValueHolder<INestedValueStore>(adapted);
 
         }
     }
@@ -44,13 +49,7 @@ public class JsonConfigElement : INestedValueStore
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
-            var val = _config.Value[key];
-            return val switch
-            {
-                INestedValueStore configElement => configElement[key],
-                { } => new CommonNestedValueStore(val),
-                _ => throw new InvalidCastException()
-            };
+            return _config.Value[key];
         }
     }
     
@@ -101,5 +100,40 @@ public class JsonConfigElement : INestedValueStore
     public bool IsNull(string key)
     {
         return false;
+    }
+
+    public Dictionary<string, object?> ToDictionary()
+    {
+        return ExpendInternal(_config.Value.GetValue() as Dictionary<string, INestedValueStore> ?? throw new InvalidCastException());
+    }
+
+    Dictionary<string, object?> ExpendInternal(Dictionary<string, INestedValueStore> dict)
+    {
+        Dictionary<string, object?> result = new Dictionary<string, object?>();
+        foreach (var pair in dict)
+        {
+            var nestedVal = pair.Value;
+            
+            if (nestedVal.GetValue() is Dictionary<string, INestedValueStore> d)
+            {
+                result.Add(pair.Key, ExpendInternal(d));
+            }
+            else
+            {
+                result.Add(pair.Key, Equals(nestedVal.GetValue(), NullObject.Value) ? null : nestedVal.GetValue());
+            }
+        }
+
+        return result;
+    }
+    public void Persistence(string path)
+    {
+        string json = JsonConvert.SerializeObject(ToDictionary(), Formatting.Indented);
+        File.WriteAllText(path, json);
+    }
+    
+    public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
+    {
+        return storeDeserializer.Deserialize(this);
     }
 }

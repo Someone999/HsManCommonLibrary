@@ -4,24 +4,54 @@ namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
 public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
 {
-    public INestedValueStore ToConfigElement(object? obj)
-    {
-        switch (obj)
-        { 
-            case JObject jObject:
-                object jsonDict = jObject.ToObject<Dictionary<string, object>>() ?? (object)NullObject.Value;
-                return new CommonNestedValueStore(jsonDict);
-            case JProperty property:
-                return new CommonNestedValueStore(property.Value);
-            case JValue value:
-                object val = value.Value ?? NullObject.Value;
 
-                return new CommonNestedValueStore(val);
-            case JArray array:
-                object val1 = array.ToObject<List<object>>() ?? (object)NullObject.Value;
-                return new CommonNestedValueStore(val1);
-            default: throw new InvalidCastException();
+    private INestedValueStore Expend(JToken? jToken)
+    {
+        if (jToken == null)
+        {
+            return new CommonNestedValueStore(NullObject.Value);
         }
+        
+        switch (jToken)
+        {
+            case JObject jObj:
+                return ExpendJObject(jObj);
+            case JProperty jProperty:
+                return new CommonNestedValueStore(jProperty.Value);
+            case JValue jValue:
+                object val = jValue.Value ?? NullObject.Value;
+                return new CommonNestedValueStore(val);
+            case JArray jArray:
+                List<INestedValueStore> nestedValueStores = new List<INestedValueStore>();
+                foreach (var item in jArray)
+                {
+                    nestedValueStores.Add(Expend(item));
+                }
+
+                return new CommonNestedValueStore(nestedValueStores);
+        }
+
+        throw new NotSupportedException();
+    }
+    private INestedValueStore ExpendJObject(JObject jObject)
+    {
+        Dictionary<string, INestedValueStore> result = new Dictionary<string, INestedValueStore>();
+        foreach (var pair in jObject)
+        {
+            result.Add(pair.Key, Expend(pair.Value));
+        }
+
+        return new CommonNestedValueStore(result);
+    }
+    public INestedValueStore ToNestedValue(object? obj)
+    {
+        var token = obj as JToken;
+        if (token is null)
+        {
+            throw new NotSupportedException();
+        }
+
+        return Expend(token);
     }
         
 

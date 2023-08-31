@@ -2,6 +2,6 @@ namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
 public interface INestedValueStoreAdapter
 {
-    INestedValueStore ToConfigElement(object? obj);
+    INestedValueStore ToNestedValue(object? obj);
     bool CanConvert(Type t);
 }
