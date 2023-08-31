@@ -22,6 +22,23 @@ public static class ConfigAssigner
         return currentNestedValueStore;
     }
     
+    static INestedValueStore RecursiveGetParentConfig(IConfigurationRegistryCenter registryCenter, string configPath
+        , out string memberName)
+    {
+        string[] configPathLevels = configPath.Split('.');
+        string configName = configPathLevels[0];
+        int len = configPathLevels.Length - 2;
+        INestedValueStore nestedValueStore = registryCenter[configName];
+        INestedValueStore currentNestedValueStore = nestedValueStore;
+        foreach (var level in configPathLevels.Skip(1).Take(len))
+        {
+            currentNestedValueStore = currentNestedValueStore[level];
+        }
+
+        memberName = configPathLevels.Last();
+        return currentNestedValueStore;
+    }
+    
     public static void AssignTo(ISyncableConfig syncableConfig, 
         Dictionary<Type, Dictionary<string, object?>>? typeConverterConstructorArgs)
     {
@@ -71,6 +88,37 @@ public static class ConfigAssigner
                 var r = Convert.ChangeType(currentCfg.GetValue(), property.PropertyType);
                 property.SetValue(syncableConfig, r);
             }
+        }
+    }
+
+    public static void AssignFrom(ISyncableConfig syncableConfig)
+    {
+        var syncableConfigType = syncableConfig.GetType();
+        BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+        var attrType = typeof(ConfigSyncItemAttribute);
+        var properties = 
+            syncableConfigType.GetProperties(bindingFlags).Where(p => p.IsDefined(attrType)).ToArray();
+        foreach (var property in properties)
+        {
+            var attr = property.GetCustomAttribute<ConfigSyncItemAttribute>();
+            if (attr == null)
+            {
+                continue;
+            }
+
+            var propertyValue = property.GetValue(syncableConfig);
+            if (propertyValue is ISyncableConfig memberSyncableConfig && attr.ConfigPath == null)
+            {
+                AssignFrom(memberSyncableConfig);
+            }
+
+            if (attr.ConfigPath == null)
+            {
+                continue;
+            }
+            
+            var currentCfg = RecursiveGetParentConfig(syncableConfig.RegistryCenter, attr.ConfigPath, out var memberName);
+            currentCfg.SetValue(memberName, new CommonNestedValueStore(property.GetValue(syncableConfig) ?? NullObject.Value));
         }
     }
 }

@@ -7,9 +7,9 @@
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>CommonLibrary</Title>
-        <Version>1.0.10</Version>
+        <Version>1.0.11</Version>
         <IsPackable>false</IsPackable>
-        <OutputType>WinExe</OutputType>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
