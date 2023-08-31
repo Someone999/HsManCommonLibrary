@@ -16,6 +16,7 @@ public static class NestedValueAdapterManager
     {
         lock (StaticLocker)
         {
+            ReflectionAssemblyManager.AddAssembly(typeof(NestedValueAdapterManager).Assembly);
             if (_adapters != null)
             {
                 return;
