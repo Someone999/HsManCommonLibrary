@@ -32,7 +32,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
         
     public object GetValue()
     {
-        return _config.Value;
+        return _config.Value.GetValue();
     }
 
     public T GetValueAs<T>()
@@ -42,7 +42,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
             throw new InvalidCastException();
         }
 
-        return (T)(object)_config.Value;
+        return (T)_config.Value;
     }
 
     private INestedValueStore GetConfigElement(string key)
@@ -67,7 +67,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
         set => SetValue(key, value);
     }
 
-    public object? Convert(Type type)
+    public object Convert(Type type)
     {
         return _config;
     }
@@ -79,7 +79,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
             throw new InvalidCastException();
         }
 
-        return (T)(object)_config.Value;
+        return (T)_config.Value;
     }
 
     public object ConvertWith(INestedValueStoreConverter converter)
@@ -94,7 +94,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
             throw new InvalidCastException();
         }
 
-        return (T)(object)_config.Value;
+        return (T)_config.Value;
     }
 
     public bool IsNull(string key)
