@@ -7,7 +7,7 @@
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>CommonLibrary</Title>
-        <Version>1.0.14</Version>
+        <Version>1.0.16</Version>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

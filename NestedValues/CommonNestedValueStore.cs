@@ -31,6 +31,7 @@ public class CommonNestedValueStore : INestedValueStore
                     {
                         return null;
                     }
+                    
                     var r = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())?
                         .ToNestedValue(_innerVal)[key];
 
@@ -133,5 +134,10 @@ public class CommonNestedValueStore : INestedValueStore
     {
         ValueHolder<T> valueHolder = new ValueHolder<T>(GetValueAs<T>());
         return valueHolder;
+    }
+
+    public ValueHolder<T> GetMemberAsValueHolder<T>(string memberName)
+    {
+        return new ValueHolder<T>((T?)GetValue(memberName));
     }
 }

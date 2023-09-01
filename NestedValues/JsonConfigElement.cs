@@ -147,4 +147,9 @@ public class JsonConfigElement : IPersistableNestedValueStore
     {
         return new ValueHolder<T>(GetValueAs<T>());
     }
+
+    public ValueHolder<T> GetMemberAsValueHolder<T>(string memberName)
+    {
+        return new ValueHolder<T>((T?)_config.Value![memberName]);
+    }
 }

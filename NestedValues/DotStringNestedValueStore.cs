@@ -73,7 +73,7 @@ public class DotStringNestedValueStore : INestedValueStore
     }
 
 
-    public object? GetValue()
+    public object GetValue()
     {
         return _nestedValue;
     }
@@ -95,7 +95,13 @@ public class DotStringNestedValueStore : INestedValueStore
 
     public INestedValueStore? this[string key]
     {
-        get => _nestedValue[key];
+        get
+        {
+            _nestedValue.GetValueAs<Dictionary<string, INestedValueStore>>()
+                    !.TryGetValue(key, out var r);
+
+            return r;
+        }
         set => SetValue(key, value);
     }
 
@@ -142,5 +148,10 @@ public class DotStringNestedValueStore : INestedValueStore
     public ValueHolder<T> GetAsValueHolder<T>()
     {
         return new ValueHolder<T>(GetValueAs<T>());
+    }
+    
+    public ValueHolder<T> GetMemberAsValueHolder<T>(string memberName)
+    {
+        return new ValueHolder<T>((T?)this[memberName]);
     }
 }

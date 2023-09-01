@@ -17,6 +17,7 @@ public interface INestedValueStore
     bool IsNull(string key);
     T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer);
     ValueHolder<T> GetAsValueHolder<T>();
+    ValueHolder<T> GetMemberAsValueHolder<T>(string memberName);
 }
 
 
