@@ -12,5 +12,5 @@ public class NullObject
 
     public override string ToString() => "";
 
-    public static NullObject Value { get; } = new NullObject();
+    public static NullObject? Value { get; } = new NullObject();
 }

@@ -16,7 +16,8 @@ public static class ConfigAssigner
         INestedValueStore currentNestedValueStore = nestedValueStore;
         foreach (var level in configPathLevels.Skip(1))
         {
-            currentNestedValueStore = currentNestedValueStore[level];
+            
+            currentNestedValueStore = currentNestedValueStore[level] ?? throw new KeyNotFoundException();
         }
 
         return currentNestedValueStore;
@@ -32,7 +33,7 @@ public static class ConfigAssigner
         INestedValueStore currentNestedValueStore = nestedValueStore;
         foreach (var level in configPathLevels.Skip(1).Take(len))
         {
-            currentNestedValueStore = currentNestedValueStore[level];
+            currentNestedValueStore = currentNestedValueStore[level] ?? throw new KeyNotFoundException();
         }
 
         memberName = configPathLevels.Last();

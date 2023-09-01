@@ -30,12 +30,12 @@ public class JsonConfigElement : IPersistableNestedValueStore
         }
     }
         
-    public object GetValue()
+    public object? GetValue()
     {
         return _config.Value.GetValue();
     }
 
-    public T GetValueAs<T>()
+    public T? GetValueAs<T>()
     {
         if (typeof(T) != typeof(Dictionary<string, object>))
         {
@@ -45,7 +45,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
         return (T)_config.Value;
     }
 
-    private INestedValueStore GetConfigElement(string key)
+    private INestedValueStore? GetConfigElement(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
@@ -53,7 +53,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
         }
     }
     
-    public void SetValue(string key, INestedValueStore val)
+    public void SetValue(string key, INestedValueStore? val)
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
         {
@@ -61,13 +61,13 @@ public class JsonConfigElement : IPersistableNestedValueStore
         }
     }
 
-    public INestedValueStore this[string key]
+    public INestedValueStore? this[string key]
     {
         get => GetConfigElement(key);
         set => SetValue(key, value);
     }
 
-    public object Convert(Type type)
+    public object? Convert(Type type)
     {
         return _config;
     }

@@ -19,10 +19,10 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
             case JProperty jProperty:
                 return new CommonNestedValueStore(jProperty.Value);
             case JValue jValue:
-                object val = jValue.Value ?? NullObject.Value;
+                object? val = jValue.Value ?? NullObject.Value;
                 return new CommonNestedValueStore(val);
             case JArray jArray:
-                List<INestedValueStore> nestedValueStores = new List<INestedValueStore>();
+                List<INestedValueStore>? nestedValueStores = new List<INestedValueStore>();
                 foreach (var item in jArray)
                 {
                     nestedValueStores.Add(Expend(item));
@@ -35,7 +35,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
     }
     private INestedValueStore ExpendJObject(JObject jObject)
     {
-        Dictionary<string, INestedValueStore> result = new Dictionary<string, INestedValueStore>();
+        Dictionary<string, INestedValueStore>? result = new Dictionary<string, INestedValueStore>();
         foreach (var pair in jObject)
         {
             result.Add(pair.Key, Expend(pair.Value));

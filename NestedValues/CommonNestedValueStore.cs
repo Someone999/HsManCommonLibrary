@@ -7,50 +7,65 @@ namespace HsManCommonLibrary.NestedValues;
 
 public class CommonNestedValueStore : INestedValueStore
 {
-    private readonly object _innerVal;
+    private readonly object? _innerVal;
     private LockManager _lockManager = new LockManager();
 
-    public CommonNestedValueStore(object innerVal)
+    public CommonNestedValueStore(object? innerVal)
     {
         _innerVal = innerVal;
     }
 
-    private INestedValueStore GetConfigElement(string key)
+    private INestedValueStore? GetValue(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
             switch (_innerVal)
             {
                 case Dictionary<string, INestedValueStore> dictionary:
-                    return dictionary[key];
+                    return !dictionary.ContainsKey(key) ? null : dictionary[key];
                 case Dictionary<string, object> objDict:
-                    return new CommonNestedValueStore(objDict[key]);
+                    return new CommonNestedValueStore(!objDict.ContainsKey(key) ? null : objDict[key]);
                 default:
-                        var r = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())?
-                            .ToNestedValue(_innerVal)[key];
+                    if (_innerVal == null)
+                    {
+                        return null;
+                    }
+                    var r = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())?
+                        .ToNestedValue(_innerVal)[key];
 
                     return new CommonNestedValueStore(r ?? _innerVal);
             }
         }
     }
         
-    public object GetValue()
+    public object? GetValue()
     {
         return _innerVal;
     }
 
-    public T GetValueAs<T>()
+    public T? GetValueAs<T>()
     {
+        if (_innerVal == null)
+        {
+            return default;
+        }
+        
         return (T)_innerVal;
     }
 
-    public void SetValue(string key, INestedValueStore val)
+    public void SetValue(string key, INestedValueStore? val)
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
         {
             
             var tmpValue = _innerVal;
-            var adapter = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType());
+            var objType = _innerVal?.GetType();
+            if(objType == null)
+            {
+                return;
+            }
+            
+            var adapter = NestedValueAdapterManager.GetAdapterByAdaptableType(objType);
             if (adapter != null)
             {
                 tmpValue = adapter.ToNestedValue(_innerVal).GetValue();
@@ -62,18 +77,18 @@ public class CommonNestedValueStore : INestedValueStore
             {
                 throw new InvalidOperationException();
             }
-            
-            dictionary[key] = val;
+
+            dictionary[key] = val ?? throw new ArgumentNullException();
         }
     }
 
-    public INestedValueStore this[string key]
+    public INestedValueStore? this[string key]
     {
-        get => GetConfigElement(key);
+        get => GetValue(key);
         set => SetValue(key, value);
     }
 
-    public object Convert(Type type)
+    public object? Convert(Type type)
     {
         lock (_lockManager.AcquireLockObject("Convert"))
         {
@@ -83,7 +98,7 @@ public class CommonNestedValueStore : INestedValueStore
         }
     }
 
-    public T Convert<T>() => (T) Convert(typeof(T));
+    public T? Convert<T>() => (T?) Convert(typeof(T));
        
 
     public object ConvertWith(INestedValueStoreConverter converter)
