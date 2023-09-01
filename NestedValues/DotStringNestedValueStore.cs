@@ -1,5 +1,6 @@
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
 using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
+using HsManCommonLibrary.ValueHolders;
 
 namespace HsManCommonLibrary.NestedValues;
 
@@ -111,12 +112,12 @@ public class DotStringNestedValueStore : INestedValueStore
     public T? Convert<T>() => (T?)Convert(typeof(T));
 
 
-    public object ConvertWith(INestedValueStoreConverter converter)
+    public object? ConvertWith(INestedValueStoreConverter converter)
     {
         return converter.Convert(this);
     }
 
-    public T ConvertWith<T>(INestedValueStoreConverter<T> converter)
+    public T? ConvertWith<T>(INestedValueStoreConverter<T> converter)
     {
         return converter.Convert(this);
     }
@@ -136,5 +137,10 @@ public class DotStringNestedValueStore : INestedValueStore
     public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
     {
         return storeDeserializer.Deserialize(this);
+    }
+
+    public ValueHolder<T> GetAsValueHolder<T>()
+    {
+        return new ValueHolder<T>(GetValueAs<T>());
     }
 }

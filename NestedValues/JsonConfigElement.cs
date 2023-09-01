@@ -32,7 +32,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
         
     public object? GetValue()
     {
-        return _config.Value.GetValue();
+        return _config.Value?.GetValue();
     }
 
     public T? GetValueAs<T>()
@@ -42,14 +42,14 @@ public class JsonConfigElement : IPersistableNestedValueStore
             throw new InvalidCastException();
         }
 
-        return (T)_config.Value;
+        return (T?)_config.Value;
     }
 
     private INestedValueStore? GetConfigElement(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
-            return _config.Value[key];
+            return _config.Value?[key];
         }
     }
     
@@ -57,7 +57,13 @@ public class JsonConfigElement : IPersistableNestedValueStore
     {
         lock (_lockManager.AcquireLockObject("SetValue"))
         {
-            _config.Value[key] = new CommonNestedValueStore(val);
+            var nestedVal = _config.Value;
+            if (nestedVal == null)
+            {
+                throw new InvalidOperationException();
+            }
+            
+            nestedVal[key] = new CommonNestedValueStore(val);
         }
     }
 
@@ -72,14 +78,14 @@ public class JsonConfigElement : IPersistableNestedValueStore
         return _config;
     }
 
-    public T Convert<T>()
+    public T? Convert<T>()
     {
         if (typeof(T) != typeof(Dictionary<string, INestedValueStore>))
         {
             throw new InvalidCastException();
         }
 
-        return (T)_config.Value;
+        return (T?)_config.Value;
     }
 
     public object ConvertWith(INestedValueStoreConverter converter)
@@ -87,14 +93,14 @@ public class JsonConfigElement : IPersistableNestedValueStore
         throw new InvalidCastException();
     }
 
-    public T ConvertWith<T>(INestedValueStoreConverter<T> converter)
+    public T? ConvertWith<T>(INestedValueStoreConverter<T> converter)
     {
         if (typeof(T) != typeof(Dictionary<string, INestedValueStore>))
         {
             throw new InvalidCastException();
         }
 
-        return (T)_config.Value;
+        return (T?)_config.Value;
     }
 
     public bool IsNull(string key)
@@ -104,7 +110,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
 
     public Dictionary<string, object?> ToDictionary()
     {
-        return ExpendInternal(_config.Value.GetValue() as Dictionary<string, INestedValueStore> ?? throw new InvalidCastException());
+        return ExpendInternal(_config.Value?.GetValue() as Dictionary<string, INestedValueStore> ?? throw new InvalidCastException());
     }
 
     Dictionary<string, object?> ExpendInternal(Dictionary<string, INestedValueStore> dict)
@@ -135,5 +141,10 @@ public class JsonConfigElement : IPersistableNestedValueStore
     public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
     {
         return storeDeserializer.Deserialize(this);
+    }
+
+    public ValueHolder<T> GetAsValueHolder<T>()
+    {
+        return new ValueHolder<T>(GetValueAs<T>());
     }
 }

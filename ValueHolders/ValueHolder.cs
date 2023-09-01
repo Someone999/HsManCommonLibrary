@@ -3,14 +3,14 @@ namespace HsManCommonLibrary.ValueHolders;
 public class ValueHolder<T> : IValueHolder<T>
 {
     private bool _initialized;
-    public ValueHolder(T defaultValue, T value)
+    public ValueHolder(T? defaultValue, T? value)
     {
         DefaultValue = defaultValue;
         _value = value;
         _initialized = value is not null;
     }
 
-    public ValueHolder(T value)
+    public ValueHolder(T? value)
     {
         _value = value;
         _initialized = value is not null;
@@ -25,7 +25,7 @@ public class ValueHolder<T> : IValueHolder<T>
     public T? DefaultValue { get; }
 
     private T? _value;
-    public T Value
+    public T? Value
     {
         get
         {
@@ -74,7 +74,10 @@ public class ValueHolder<T> : IValueHolder<T>
     }
 
     public bool IsInitialized() => _initialized;
-       
+
+    public T? GetValueOrDefault(T? defVal) => Value ?? defVal;
+    
+    public T GetValueOrDefaultNonNull(T defVal) => Value ?? defVal;
 
     object? IValueHolder.DefaultValue => DefaultValue;
     object? IValueHolder.Value => Value;

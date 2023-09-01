@@ -2,6 +2,7 @@ using HsManCommonLibrary.Locks;
 using HsManCommonLibrary.NestedValues.NestedValueAdapters;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
 using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
+using HsManCommonLibrary.ValueHolders;
 
 namespace HsManCommonLibrary.NestedValues;
 
@@ -101,7 +102,7 @@ public class CommonNestedValueStore : INestedValueStore
     public T? Convert<T>() => (T?) Convert(typeof(T));
        
 
-    public object ConvertWith(INestedValueStoreConverter converter)
+    public object? ConvertWith(INestedValueStoreConverter converter)
     {
         lock (_lockManager.AcquireLockObject("ConvertWith"))
         {
@@ -109,7 +110,7 @@ public class CommonNestedValueStore : INestedValueStore
         }
     }
 
-    public T ConvertWith<T>(INestedValueStoreConverter<T> converter)
+    public T? ConvertWith<T>(INestedValueStoreConverter<T> converter)
     {
         lock (_lockManager.AcquireLockObject("ConvertWith<T>"))
         {
@@ -127,5 +128,10 @@ public class CommonNestedValueStore : INestedValueStore
     {
         return storeDeserializer.Deserialize(this);
     }
-    
+
+    public ValueHolder<T> GetAsValueHolder<T>()
+    {
+        ValueHolder<T> valueHolder = new ValueHolder<T>(GetValueAs<T>());
+        return valueHolder;
+    }
 }
