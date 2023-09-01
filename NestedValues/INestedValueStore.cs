@@ -18,6 +18,8 @@ public interface INestedValueStore
     T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer);
     ValueHolder<T> GetAsValueHolder<T>();
     ValueHolder<T> GetMemberAsValueHolder<T>(string memberName);
+    bool TryGetValue<T>(out T? value);
+    bool TryGetMemberValue<T>(string name, out T? value);
 }
 
 

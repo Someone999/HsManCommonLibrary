@@ -140,4 +140,29 @@ public class CommonNestedValueStore : INestedValueStore
     {
         return new ValueHolder<T>((T?)GetValue(memberName));
     }
+
+    public bool TryGetValue<T>(out T? value)
+    {
+        if (_innerVal == null)
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T)_innerVal;
+        return true;
+    }
+
+    public bool TryGetMemberValue<T>(string name, out T? value)
+    {
+        var val = GetValue(name);
+        if (val == null)
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T) val;
+        return true;
+    }
 }

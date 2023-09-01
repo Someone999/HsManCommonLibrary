@@ -45,7 +45,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
         return (T?)_config.Value;
     }
 
-    private INestedValueStore? GetConfigElement(string key)
+    private INestedValueStore? GetValue(string key)
     {
         lock (_lockManager.AcquireLockObject("GetConfigElement"))
         {
@@ -69,7 +69,7 @@ public class JsonConfigElement : IPersistableNestedValueStore
 
     public INestedValueStore? this[string key]
     {
-        get => GetConfigElement(key);
+        get => GetValue(key);
         set => SetValue(key, value);
     }
 
@@ -151,5 +151,24 @@ public class JsonConfigElement : IPersistableNestedValueStore
     public ValueHolder<T> GetMemberAsValueHolder<T>(string memberName)
     {
         return new ValueHolder<T>((T?)_config.Value![memberName]);
+    }
+    
+    public bool TryGetValue<T>(out T? value)
+    {
+        value = (T)(object)_config;
+        return true;
+    }
+
+    public bool TryGetMemberValue<T>(string name, out T? value)
+    {
+        var val = GetValue(name);
+        if (val == null)
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T) val;
+        return true;
     }
 }
