@@ -154,16 +154,34 @@ public class DotStringNestedValueStore : INestedValueStore
     {
         return new ValueHolder<T>((T?)this[memberName]);
     }
-    
+
+    public ValueHolder<T> GetMemberValueAsValueHolder<T>(string memberName)
+    {
+        return new ValueHolder<T>((T?)this[memberName]?.GetValue());
+    }
+
     public bool TryGetValue<T>(out T? value)
     {
         value = (T)_nestedValue;
         return true;
     }
 
-    public bool TryGetMemberValue<T>(string name, out T? value)
+    public bool TryGetMember<T>(string name, out INestedValueStore? value)
     {
         var val = this[name];
+        if (val == null)
+        {
+            value = null;
+            return false;
+        }
+
+        value =  val;
+        return true;
+    }
+
+    public bool TryGetMemberValue<T>(string name, out T? value)
+    {
+        var val = this[name]?.GetValue();
         if (val == null)
         {
             value = default;

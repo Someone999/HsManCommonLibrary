@@ -6,11 +6,11 @@ public class NullObject
     {
     }
 
-    public override bool Equals(object? obj) => obj == null;
+    public override bool Equals(object? obj) => obj == null || Value.Equals(obj);
 
     public override int GetHashCode() => 0;
 
     public override string ToString() => "";
 
-    public static NullObject? Value { get; } = new NullObject();
+    public static NullObject Value { get; } = new NullObject();
 }

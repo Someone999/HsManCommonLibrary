@@ -141,6 +141,11 @@ public class CommonNestedValueStore : INestedValueStore
         return new ValueHolder<T>((T?)GetValue(memberName));
     }
 
+    public ValueHolder<T> GetMemberValueAsValueHolder<T>(string memberName)
+    {
+        return new ValueHolder<T>((T?)GetValue(memberName)?.GetValue());
+    }
+
     public bool TryGetValue<T>(out T? value)
     {
         if (_innerVal == null)
@@ -150,6 +155,19 @@ public class CommonNestedValueStore : INestedValueStore
         }
 
         value = (T)_innerVal;
+        return true;
+    }
+
+    public bool TryGetMember<T>(string name, out INestedValueStore? value)
+    {
+        var memberVal = GetValue(name);
+        if (memberVal == null)
+        {
+            value = null;
+            return false;
+        }
+
+        value = memberVal;
         return true;
     }
 

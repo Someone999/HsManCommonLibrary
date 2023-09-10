@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Reflection;
 using HsManCommonLibrary.Configuration.Attributes;
 using HsManCommonLibrary.NestedValues;
@@ -8,35 +7,130 @@ namespace HsManCommonLibrary.Configuration.Utils;
 
 public static class ConfigAssigner
 {
-    static INestedValueStore RecursiveGetConfig(IConfigurationRegistryCenter registryCenter, string configPath)
+
+    static ConfigPathPrefixProcessResult ProcessPrefix(Type syncableConfigType, string configName)
+    {
+        if (!configName.Contains("::"))
+        {
+            return new ConfigPathPrefixProcessResult(syncableConfigType, configName);
+        }
+
+        string[] nameParts = configName.Split(':', ':');
+        return nameParts[0] switch
+        {
+            "base" => new ConfigPathPrefixProcessResult(GetBaseType(syncableConfigType), nameParts[2]),
+            "this" => new ConfigPathPrefixProcessResult(syncableConfigType, nameParts[2]),
+            _ => new ConfigPathPrefixProcessResult(syncableConfigType, configName)
+        };
+    }
+        
+    static Type GetBaseType(Type derivedType)
+    {
+        if (derivedType.BaseType == null)
+        {
+            throw new InvalidOperationException($"Type {derivedType} has no base type");
+        }
+
+        return derivedType.BaseType;
+    }
+    
+    
+    static object? GetMemberValue(object obj, MemberInfo memberInfo)
+    {
+        return memberInfo.MemberType switch
+        {
+            MemberTypes.Field => ((FieldInfo)memberInfo).GetValue(obj),
+            MemberTypes.Method => ((MethodInfo)memberInfo).Invoke(obj, Array.Empty<object>()),
+            MemberTypes.Property => ((PropertyInfo)memberInfo).GetValue(obj),
+            _ => throw new NotSupportedException()
+        };
+    }
+    
+    static INestedValueStore RecursiveGetConfig(ISyncableConfig syncableConfig, string configPath)
     {
         string[] configPathLevels = configPath.Split('.');
         string configName = configPathLevels[0];
-        INestedValueStore nestedValueStore = registryCenter[configName];
+        INestedValueStore nestedValueStore = syncableConfig.RegistryCenter[configName];
         INestedValueStore currentNestedValueStore = nestedValueStore;
         foreach (var level in configPathLevels.Skip(1))
         {
+            string tmpLevel = level;
+            if (level.StartsWith("<") && level.EndsWith(">"))
+            {
+                string memberName = level.Substring(1, level.Length - 2);
+                var searchType = syncableConfig.GetType();
+                var result = ProcessPrefix(searchType, memberName);
+                searchType = result.SearchType;
+                memberName = result.MemberName;
+                BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
+                var members = searchType.GetMember(memberName, bindingFlags);
+                
+                if (members.Length == 0 || members == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Member {memberName} is not in the type or it's a non-public member.");
+                }
+
+                var member = members[0];
+                var memberValue = GetMemberValue(syncableConfig, member);
+                if (memberValue == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                
+                tmpLevel = memberValue.ToString() ?? throw new ArgumentNullException();
+            }
             
-            currentNestedValueStore = currentNestedValueStore[level] ?? throw new KeyNotFoundException();
+            currentNestedValueStore = currentNestedValueStore[tmpLevel] ?? throw new KeyNotFoundException();
         }
 
         return currentNestedValueStore;
     }
     
-    static INestedValueStore RecursiveGetParentConfig(IConfigurationRegistryCenter registryCenter, string configPath
-        , out string memberName)
+    static INestedValueStore RecursiveGetParentConfig(ISyncableConfig syncableConfig, string configPath
+        , out string valueElementName)
     {
         string[] configPathLevels = configPath.Split('.');
         string configName = configPathLevels[0];
         int len = configPathLevels.Length - 2;
-        INestedValueStore nestedValueStore = registryCenter[configName];
+        INestedValueStore nestedValueStore = syncableConfig.RegistryCenter[configName];
         INestedValueStore currentNestedValueStore = nestedValueStore;
         foreach (var level in configPathLevels.Skip(1).Take(len))
         {
-            currentNestedValueStore = currentNestedValueStore[level] ?? throw new KeyNotFoundException();
+            string tmpLevel = level;
+            if (level.StartsWith("<") && level.EndsWith(">"))
+            {
+                string memberName = level.Substring(1, level.Length - 2);
+                var searchType = syncableConfig.GetType();
+                var result = ProcessPrefix(searchType, memberName);
+                searchType = result.SearchType;
+                memberName = result.MemberName;
+                
+                
+                BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
+                var members = searchType.GetMember(memberName, bindingFlags);
+                
+                if (members.Length == 0 || members == null)
+                {
+                    throw new InvalidOperationException(
+                            $"Member {memberName} is not in the type or it's a non-public member.");
+                }
+
+                var member = members[0];
+                var memberValue = GetMemberValue(syncableConfig, member);
+                if (memberValue == null)
+                {
+                    throw new TargetException("Failed to get value of target member");
+                }
+
+                tmpLevel = memberValue.ToString() ?? throw new 
+                    NullReferenceException("Failed to get value of target member");
+            }
+            
+            currentNestedValueStore = currentNestedValueStore[tmpLevel] ?? throw new KeyNotFoundException();
         }
 
-        memberName = configPathLevels.Last();
+        valueElementName = configPathLevels.Last();
         return currentNestedValueStore;
     }
     
@@ -68,7 +162,7 @@ public static class ConfigAssigner
                 continue;
             }
             
-            var currentCfg = RecursiveGetConfig(syncableConfig.RegistryCenter, attr.ConfigPath);
+            var currentCfg = RecursiveGetConfig(syncableConfig, attr.ConfigPath);
             if (attr.ConverterType != null)
             {
                 var converterType = attr.ConverterType;
@@ -118,7 +212,7 @@ public static class ConfigAssigner
                 continue;
             }
             
-            var currentCfg = RecursiveGetParentConfig(syncableConfig.RegistryCenter, attr.ConfigPath, out var memberName);
+            var currentCfg = RecursiveGetParentConfig(syncableConfig, attr.ConfigPath, out var memberName);
             currentCfg.SetValue(memberName, new CommonNestedValueStore(property.GetValue(syncableConfig) ?? NullObject.Value));
         }
     }

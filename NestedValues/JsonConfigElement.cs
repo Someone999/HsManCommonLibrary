@@ -152,16 +152,34 @@ public class JsonConfigElement : IPersistableNestedValueStore
     {
         return new ValueHolder<T>((T?)_config.Value![memberName]);
     }
-    
+
+    public ValueHolder<T> GetMemberValueAsValueHolder<T>(string memberName)
+    {
+        return new ValueHolder<T>((T?)_config.Value![memberName]?.GetValue());
+    }
+
     public bool TryGetValue<T>(out T? value)
     {
         value = (T)(object)_config;
         return true;
     }
 
-    public bool TryGetMemberValue<T>(string name, out T? value)
+    public bool TryGetMember<T>(string name, out INestedValueStore? value)
     {
         var val = GetValue(name);
+        if (val != null)
+        {
+            value = val;
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    public bool TryGetMemberValue<T>(string name, out T? value)
+    {
+        var val = GetValue(name)?.GetValue();
         if (val == null)
         {
             value = default;
