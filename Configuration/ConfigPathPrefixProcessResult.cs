@@ -8,7 +8,7 @@ public class ConfigPathPrefixProcessResult
         MemberName = memberName;
     }
 
-    public Type SearchType { get; set; }
-    public string MemberName { get; set; }
+    public Type SearchType { get; }
+    public string MemberName { get; }
     
 }

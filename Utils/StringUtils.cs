@@ -25,19 +25,19 @@ public static class StringUtils
 
     static bool IsAcceptableSaltCharacter(char ch)
     {
-        bool InRange(char val, char min, char max) => val >= min && val <= max;
         return InRange(ch, (char) 65, (char) 90)
-            || InRange(ch, (char) 97, (char) 122)
-            || InRange(ch, (char) 33, (char) 47)
-            || InRange(ch, (char) 58, (char) 64)
-            || InRange(ch, (char) 91, (char) 96)
-            || InRange(ch, (char) 123, (char) 126);
+               || InRange(ch, (char) 97, (char) 122)
+               || InRange(ch, (char) 33, (char) 47)
+               || InRange(ch, (char) 58, (char) 64)
+               || InRange(ch, (char) 91, (char) 96)
+               || InRange(ch, (char) 123, (char) 126);
+        bool InRange(char val, char min, char max) => val >= min && val <= max;
     }
     public static string GenerateRandomString(int size)
     {
         Random random = new Random();
         StringBuilder stringBuilder = new StringBuilder();
-        char lastChar = '\0';
+        const char lastChar = '\0';
         for (int i = 0; i < size; i++)
         {
             char asciiChar = (char)random.Next(0, 127);

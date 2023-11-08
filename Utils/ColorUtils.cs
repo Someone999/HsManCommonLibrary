@@ -4,7 +4,7 @@ namespace HsManCommonLibrary.Utils;
 
 public static class ColorUtils
 {
-    private static Dictionary<ConsoleColor, string> _consoleColorMap = new Dictionary<ConsoleColor, string>
+    private static readonly Dictionary<ConsoleColor, string> _consoleColorMap = new Dictionary<ConsoleColor, string>
     {
         { ConsoleColor.Black, "#000000" },
         { ConsoleColor.DarkBlue, "#000080" },

@@ -8,7 +8,7 @@ public class AssemblyTypeCollection : IEnumerable<Type>
     {
         _types = new List<Type>(types);
     }
-    private List<Type> _types;
+    private readonly List<Type> _types;
     public IEnumerator<Type> GetEnumerator() => _types.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

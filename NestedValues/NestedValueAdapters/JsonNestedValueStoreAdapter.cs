@@ -19,7 +19,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
             case JProperty jProperty:
                 return new CommonNestedValueStore(jProperty.Value);
             case JValue jValue:
-                object? val = jValue.Value ?? NullObject.Value;
+                object val = jValue.Value ?? NullObject.Value;
                 return new CommonNestedValueStore(val);
             case JArray jArray:
                 List<INestedValueStore>? nestedValueStores = new List<INestedValueStore>();
@@ -45,8 +45,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
     }
     public INestedValueStore ToNestedValue(object? obj)
     {
-        var token = obj as JToken;
-        if (token is null)
+        if (obj is not JToken token)
         {
             throw new NotSupportedException();
         }

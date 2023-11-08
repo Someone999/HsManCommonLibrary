@@ -62,7 +62,7 @@ public static class ConfigAssigner
                 var result = ProcessPrefix(searchType, memberName);
                 searchType = result.SearchType;
                 memberName = result.MemberName;
-                BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
+                const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
                 var members = searchType.GetMember(memberName, bindingFlags);
                 
                 if (members.Length == 0 || members == null)
@@ -107,7 +107,7 @@ public static class ConfigAssigner
                 memberName = result.MemberName;
                 
                 
-                BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
+                const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
                 var members = searchType.GetMember(memberName, bindingFlags);
                 
                 if (members.Length == 0 || members == null)
@@ -139,7 +139,7 @@ public static class ConfigAssigner
     {
         
         var syncableConfigType = syncableConfig.GetType();
-        BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+        const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
         var attrType = typeof(ConfigSyncItemAttribute);
         var properties = 
             syncableConfigType.GetProperties(bindingFlags).Where(p => p.IsDefined(attrType)).ToArray();
@@ -180,7 +180,13 @@ public static class ConfigAssigner
             }
             else
             {
-                var r = Convert.ChangeType(currentCfg.GetValue(), property.PropertyType);
+                var val = currentCfg.GetValue();
+                if (Equals(val, NullObject.Value))
+                {
+                    val = null;
+                }
+                
+                var r = Convert.ChangeType(val, property.PropertyType);
                 property.SetValue(syncableConfig, r);
             }
         }
@@ -189,7 +195,7 @@ public static class ConfigAssigner
     public static void AssignFrom(ISyncableConfig syncableConfig)
     {
         var syncableConfigType = syncableConfig.GetType();
-        BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+        const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
         var attrType = typeof(ConfigSyncItemAttribute);
         var properties = 
             syncableConfigType.GetProperties(bindingFlags).Where(p => p.IsDefined(attrType)).ToArray();

@@ -4,7 +4,7 @@ namespace HsManCommonLibrary.Counters;
 
 public class CountLimiter
 {
-    private Stopwatch _stopwatch = new Stopwatch();
+    private readonly Stopwatch _stopwatch = new Stopwatch();
     private int _counter;
 
     /// <summary>

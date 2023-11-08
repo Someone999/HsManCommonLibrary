@@ -2,7 +2,7 @@ namespace HsManCommonLibrary.Logger.Serializers;
 
 public class SerializerMap
 {
-    private Dictionary<Type, IObjectSerializer> _serializers = new Dictionary<Type, IObjectSerializer>();
+    private readonly Dictionary<Type, IObjectSerializer> _serializers = new Dictionary<Type, IObjectSerializer>();
 
     public void Register<T>(IObjectSerializer<T> serializer)
     {

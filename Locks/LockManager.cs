@@ -4,20 +4,29 @@ namespace HsManCommonLibrary.Locks;
 
 public class LockManager
 {
-    private ConcurrentDictionary<string, object> _lockers = new ConcurrentDictionary<string, object>();
-    private ConcurrentDictionary<string, int> _usage = new ConcurrentDictionary<string, int>();
-    private ConcurrentDictionary<string, int> _zeroReferenceCounts = new ConcurrentDictionary<string, int>();
+    private readonly ConcurrentDictionary<string, object> _lockers = new ConcurrentDictionary<string, object>();
+    private readonly ConcurrentDictionary<string, int> _usage = new ConcurrentDictionary<string, int>();
+    private readonly ConcurrentDictionary<string, int> _zeroReferenceCounts = new ConcurrentDictionary<string, int>();
 
-    public int MaxLockCount { get; set; } = 10;
-    public int ZeroReferenceThreshold { get; set; } = 3;
-    string GetLeastUsedLock()
+    private readonly ReaderWriterLockSlim _removeZeroRefLockReadWriterLockSlim = new ReaderWriterLockSlim();
+   
+    public int MaxLockCount { get; set; } = 1024;
+    public int ZeroReferenceThreshold { get; set; } = 10;
+
+    string? GetLeastUsedLock()
     {
+        if (_usage.IsEmpty)
+        {
+            return null;
+        }
+        
         var lockName = _usage.OrderBy(o => o.Value).ElementAt(0);
         return lockName.Key;
     }
 
     void CheckZeroReference()
     {
+        _removeZeroRefLockReadWriterLockSlim.EnterWriteLock();
         foreach (var reference in _usage)
         {
             if (reference.Value != 0)
@@ -34,10 +43,12 @@ public class LockManager
                 _zeroReferenceCounts[reference.Key]++;
             }
         }
+        _removeZeroRefLockReadWriterLockSlim.ExitWriteLock();
     }
-    
-    void RemoveZeroReferenceLocks()
+
+    public void RemoveZeroReferenceLocks()
     {
+        _removeZeroRefLockReadWriterLockSlim.EnterWriteLock();
         CheckZeroReference();
         ConcurrentBag<string> bag = new ConcurrentBag<string>();
         foreach (var reference in _zeroReferenceCounts)
@@ -50,29 +61,29 @@ public class LockManager
 
         foreach (var lockName in bag)
         {
-            if (lockName is null)
-            {
-                continue;
-            }
-
             _lockers.TryRemove(lockName, out _);
             _usage.TryRemove(lockName, out _);
             _zeroReferenceCounts.TryRemove(lockName, out _);
         }
+
+        _removeZeroRefLockReadWriterLockSlim.ExitWriteLock();
     }
-    
+
     public object AcquireLockObject(string name)
     {
         object retObject;
-        RemoveZeroReferenceLocks();
         if (!_lockers.ContainsKey(name))
         {
             if (_lockers.Count == MaxLockCount)
             {
-                _lockers.TryRemove(GetLeastUsedLock(), out _);
-                _usage.TryRemove(GetLeastUsedLock(), out _);
+                string? leastUsedLock = GetLeastUsedLock();
+                if (leastUsedLock != null)
+                {
+                    _lockers.TryRemove(leastUsedLock, out _);
+                    _usage.TryRemove(leastUsedLock, out _);
+                }
             }
-            
+
             _lockers.TryAdd(name, retObject = new object());
             _usage.TryAdd(name, 1);
         }
@@ -84,14 +95,6 @@ public class LockManager
 
         return retObject;
     }
-
-    public void ReleaseLock(string name)
-    {
-        if (!_usage.ContainsKey(name) || _usage[name] <= 0)
-        {
-            return;
-        }
-
-        _usage[name]--;
-    }
+    
+    
 }

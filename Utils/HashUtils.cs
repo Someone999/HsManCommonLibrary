@@ -4,7 +4,7 @@ namespace HsManCommonLibrary.Utils;
 
 public static class HashUtils
 {
-    public static string GetHexString(this byte[] hash)
+    public static string GetHexString(this IEnumerable<byte> hash)
     {
         StringBuilder stringBuilder = new StringBuilder();
         foreach (var hashByte in hash)

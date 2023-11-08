@@ -2,7 +2,7 @@ namespace HsManCommonLibrary.Utils;
 
 public static class ConsoleUtils
 {
-    static Dictionary<ConsoleColor, string> _colorSeqDictionary = new Dictionary<ConsoleColor, string>()
+    static readonly Dictionary<ConsoleColor, string> _colorSeqDictionary = new()
     {
         { ConsoleColor.Black, "\x1b[30m" },
         { ConsoleColor.DarkBlue, "\x1b[34m" },

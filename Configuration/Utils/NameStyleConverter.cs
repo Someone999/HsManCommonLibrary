@@ -129,7 +129,7 @@ public static class NameStyleConverter
         return builder.ToString();
     }
 
-    public static string[] MixedSnakeToLowerNames(string[] nameParts)
+    public static string[] MixedSnakeToLowerNames(IEnumerable<string> nameParts)
         => nameParts.Select(ToLower).ToArray();
     
     public static NameStyle DetectNameStyle(string name)

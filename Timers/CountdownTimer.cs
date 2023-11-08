@@ -6,7 +6,7 @@ public class CountdownTimer : ITimer
 {
     public event TimerElapsedEventHandler? Elapsed;
     public double Interval { get; set; }
-    private Stopwatch _stopwatch = new Stopwatch();
+    private readonly Stopwatch _stopwatch = new Stopwatch();
     private bool _resetRequired;
     private bool _stopRequired;
     private bool _isRunning;

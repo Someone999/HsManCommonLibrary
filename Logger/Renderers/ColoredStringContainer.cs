@@ -4,7 +4,7 @@ namespace HsManCommonLibrary.Logger.Renderers;
 
 public class ColoredStringContainer : IEnumerable<ColoredString>
 {
-    private List<ColoredString> _coloredStrings = new();
+    private readonly List<ColoredString> _coloredStrings = new();
 
     private ColoredString[] AddedString => _coloredStrings.ToArray();
 

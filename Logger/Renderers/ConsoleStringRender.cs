@@ -5,7 +5,7 @@ namespace HsManCommonLibrary.Logger.Renderers;
 
 public class ConsoleStringRender : IStringRenderer
 {
-    string ConvertToConsoleControlSequence(ColoredString coloredString)
+    static string ConvertToConsoleControlSequence(ColoredString coloredString)
     {
         var consoleColor = ColorUtils.ToConsoleColor(coloredString.Color);
         StringBuilder builder = new StringBuilder();

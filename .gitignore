@@ -207,3 +207,4 @@ TestResults/
 *.suo.user
 *.vshost
 /protos
+/qodana.yaml

@@ -1,13 +1,15 @@
+using HsManCommonLibrary.Locks;
+using HsManCommonLibrary.NestedValues;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
 using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
 using HsManCommonLibrary.ValueHolders;
 
-namespace HsManCommonLibrary.NestedValues;
+namespace HsManCommonLibrary.Configuration;
 
 public class DotStringNestedValueStore : INestedValueStore
 {
-    private INestedValueStore _nestedValue = new CommonNestedValueStore(new Dictionary<string, INestedValueStore>());
-
+    private readonly INestedValueStore _nestedValue = new CommonNestedValueStore(new Dictionary<string, INestedValueStore>());
+    private readonly LockManager _lockManager = new LockManager();
     public void Add(string dotString)
     {
         string[] levels = dotString.Split('.');
@@ -34,8 +36,8 @@ public class DotStringNestedValueStore : INestedValueStore
             }
             else if (!level.Contains('='))
             {
-                Dictionary<string, INestedValueStore>? dict = new Dictionary<string, INestedValueStore>();
-                INestedValueStore? nestedValueStore = new CommonNestedValueStore(dict);
+                Dictionary<string, INestedValueStore> dict = new Dictionary<string, INestedValueStore>();
+                INestedValueStore nestedValueStore = new CommonNestedValueStore(dict);
                 if (!stack.Any())
                 {
                     throw new KeyNotFoundException();
@@ -61,7 +63,7 @@ public class DotStringNestedValueStore : INestedValueStore
             {
                 int eqIdx = trimedLevel.IndexOf('=');
                 string propertyName = level.Substring(0, eqIdx).Trim();
-                string? propertyVal = level.Substring(eqIdx + 1).TrimStart();
+                string propertyVal = level.Substring(eqIdx + 1).TrimStart();
                 var storedVal1 = stack.Peek()?.GetValueAs<Dictionary<string, INestedValueStore>>();
                 if (storedVal1 == null)
                 {
@@ -75,7 +77,10 @@ public class DotStringNestedValueStore : INestedValueStore
 
     public object GetValue()
     {
-        return _nestedValue;
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        {
+            return _nestedValue;
+        }
     }
 
     public T? GetValueAs<T>()
@@ -85,23 +90,33 @@ public class DotStringNestedValueStore : INestedValueStore
             throw new InvalidCastException();
         }
 
-        return (T?)(object?)_nestedValue.GetValueAs<Dictionary<string, INestedValueStore>>();
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        {
+            return (T?)(object?)_nestedValue.GetValueAs<Dictionary<string, INestedValueStore>>();
+        }
     }
 
     public void SetValue(string key, INestedValueStore? val)
     {
-        _nestedValue[key] = val;
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        {
+            _nestedValue[key] = val;
+        }
     }
 
-    public INestedValueStore? this[string key]
+    private INestedValueStore? GetValue(string key)
     {
-        get
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
         {
             _nestedValue.GetValueAs<Dictionary<string, INestedValueStore>>()
-                    !.TryGetValue(key, out var r);
+                !.TryGetValue(key, out var r);
 
             return r;
         }
+    }
+    public INestedValueStore? this[string key]
+    {
+        get => GetValue(key);
         set => SetValue(key, value);
     }
 
@@ -112,7 +127,10 @@ public class DotStringNestedValueStore : INestedValueStore
             throw new InvalidCastException();
         }
 
-        return _nestedValue.GetValueAs<Dictionary<string, INestedValueStore>>();
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        {
+            return _nestedValue.GetValueAs<Dictionary<string, INestedValueStore>>();
+        }
     }
 
     public T? Convert<T>() => (T?)Convert(typeof(T));
@@ -130,14 +148,17 @@ public class DotStringNestedValueStore : INestedValueStore
 
     public bool IsNull(string key)
     {
-        var val = _nestedValue[key];
-        var storedVal = val?.GetValue();
-        if (val == null || storedVal == null)
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
         {
-            throw new KeyNotFoundException();
+            var val = _nestedValue[key];
+            var storedVal = val?.GetValue();
+            if (val == null || storedVal == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            return storedVal.Equals(NullObject.Value);
         }
-        
-        return storedVal.Equals(NullObject.Value);
     }
 
     public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
@@ -150,14 +171,20 @@ public class DotStringNestedValueStore : INestedValueStore
         return new ValueHolder<T>(GetValueAs<T>());
     }
     
-    public ValueHolder<T> GetMemberAsValueHolder<T>(string memberName)
+    public ValueHolder<INestedValueStore> GetMemberAsValueHolder(string memberName)
     {
-        return new ValueHolder<T>((T?)this[memberName]);
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        {
+            return new ValueHolder<INestedValueStore>(this[memberName]);
+        }
     }
 
     public ValueHolder<T> GetMemberValueAsValueHolder<T>(string memberName)
     {
-        return new ValueHolder<T>((T?)this[memberName]?.GetValue());
+        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        {
+            return new ValueHolder<T>((T?)this[memberName]?.GetValue());
+        }
     }
 
     public bool TryGetValue<T>(out T? value)
@@ -166,7 +193,7 @@ public class DotStringNestedValueStore : INestedValueStore
         return true;
     }
 
-    public bool TryGetMember<T>(string name, out INestedValueStore? value)
+    public bool TryGetMember(string name, out INestedValueStore? value)
     {
         var val = this[name];
         if (val == null)
