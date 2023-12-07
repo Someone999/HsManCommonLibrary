@@ -208,3 +208,4 @@ TestResults/
 *.vshost
 /protos
 /qodana.yaml
+/Obsoleted/

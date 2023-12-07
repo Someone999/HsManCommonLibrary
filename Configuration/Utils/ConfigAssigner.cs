@@ -1,6 +1,6 @@
 using System.Reflection;
-using HsManCommonLibrary.Configuration.Attributes;
 using HsManCommonLibrary.NestedValues;
+using HsManCommonLibrary.NestedValues.Attributes;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
 
 namespace HsManCommonLibrary.Configuration.Utils;
@@ -140,29 +140,25 @@ public static class ConfigAssigner
         
         var syncableConfigType = syncableConfig.GetType();
         const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-        var attrType = typeof(ConfigSyncItemAttribute);
+        var attrType = typeof(AutoAssignAttribute);
         var properties = 
             syncableConfigType.GetProperties(bindingFlags).Where(p => p.IsDefined(attrType)).ToArray();
         foreach (var property in properties)
         {
-            var attr = property.GetCustomAttribute<ConfigSyncItemAttribute>();
+            var attr = property.GetCustomAttribute<AutoAssignAttribute>();
             if (attr == null)
             {
                 continue;
             }
 
             var propertyValue = property.GetValue(syncableConfig);
-            if (propertyValue is ISyncableConfig memberSyncableConfig && attr.ConfigPath == null)
+            if (propertyValue is ISyncableConfig memberSyncableConfig && string.IsNullOrEmpty(attr.Path))
             {
                 AssignTo(memberSyncableConfig, typeConverterConstructorArgs);
             }
-
-            if (attr.ConfigPath == null)
-            {
-                continue;
-            }
             
-            var currentCfg = RecursiveGetConfig(syncableConfig, attr.ConfigPath);
+            
+            var currentCfg = RecursiveGetConfig(syncableConfig, attr.Path);
             if (attr.ConverterType != null)
             {
                 var converterType = attr.ConverterType;
@@ -196,29 +192,25 @@ public static class ConfigAssigner
     {
         var syncableConfigType = syncableConfig.GetType();
         const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-        var attrType = typeof(ConfigSyncItemAttribute);
+        var attrType = typeof(AutoAssignAttribute);
         var properties = 
             syncableConfigType.GetProperties(bindingFlags).Where(p => p.IsDefined(attrType)).ToArray();
         foreach (var property in properties)
         {
-            var attr = property.GetCustomAttribute<ConfigSyncItemAttribute>();
+            var attr = property.GetCustomAttribute<AutoAssignAttribute>();
             if (attr == null)
             {
                 continue;
             }
 
             var propertyValue = property.GetValue(syncableConfig);
-            if (propertyValue is ISyncableConfig memberSyncableConfig && attr.ConfigPath == null)
+            if (propertyValue is ISyncableConfig memberSyncableConfig && string.IsNullOrEmpty(attr.Path))
             {
                 AssignFrom(memberSyncableConfig);
             }
-
-            if (attr.ConfigPath == null)
-            {
-                continue;
-            }
             
-            var currentCfg = RecursiveGetParentConfig(syncableConfig, attr.ConfigPath, out var memberName);
+            
+            var currentCfg = RecursiveGetParentConfig(syncableConfig, attr.Path, out var memberName);
             currentCfg.SetValue(memberName, new CommonNestedValueStore(property.GetValue(syncableConfig) ?? NullObject.Value));
         }
     }

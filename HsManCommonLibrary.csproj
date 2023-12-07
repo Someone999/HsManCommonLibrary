@@ -7,9 +7,8 @@
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>CommonLibrary</Title>
-        <Version>1.0.40</Version>
-        <IsPackable>false</IsPackable>
-        <OutputType>Exe</OutputType>
+        <Version>1.0.56</Version>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,14 +19,17 @@
 
     <ItemGroup>
       <Compile Remove="protos\**" />
+      <Compile Remove="Obsoleted\**" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Remove="protos\**" />
+      <EmbeddedResource Remove="Obsoleted\**" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="protos\**" />
+      <None Remove="Obsoleted\**" />
 
 
 

@@ -4,16 +4,16 @@ namespace HsManCommonLibrary.Reflections;
 
 public static class ReflectionAssemblyManager
 {
-    private static readonly List<Assembly> _registeredAssemblies = new List<Assembly>();
+    private static readonly List<Assembly> RegisteredAssemblies = new List<Assembly>();
     private static readonly object StaticLocker = new object();
 
     public static void AddAssembly(Assembly assembly)
     {
         lock (StaticLocker)
         {
-            if (!_registeredAssemblies.Contains(assembly))
+            if (!RegisteredAssemblies.Contains(assembly))
             {
-                _registeredAssemblies.Add(assembly);
+                RegisteredAssemblies.Add(assembly);
             }
         }
     }
@@ -59,7 +59,7 @@ public static class ReflectionAssemblyManager
     {
         lock (StaticLocker)
         {
-            var asmTypes = _registeredAssemblies.Select(asm => asm.GetTypes());
+            var asmTypes = RegisteredAssemblies.Select(asm => asm.GetTypes());
             List<Type> types = new List<Type>();
             foreach (var asmType in asmTypes)
             {

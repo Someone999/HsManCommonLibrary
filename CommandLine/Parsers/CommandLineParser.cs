@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace HsManCommonLibrary.CommandLine;
+namespace HsManCommonLibrary.CommandLine.Parsers;
 
 public class CommandLineParser
 {
@@ -26,7 +26,7 @@ public class CommandLineParser
         return builder.ToString();
     }
     
-    public ParsedCommandLineElement[] Parse(string commandLine)
+    public ParsedArgument[] Parse(string commandLine)
     {
         List<string> tokens = new List<string>();
         StringBuilder lastToken = new StringBuilder();
@@ -62,9 +62,9 @@ public class CommandLineParser
         return Parse(tokens.ToArray());
     }
     
-    public ParsedCommandLineElement[] Parse(string[] commandLine)
+    public ParsedArgument[] Parse(string[] commandLine)
     {
-        List<ParsedCommandLineElement> parsedCommandLineElements = new List<ParsedCommandLineElement>();
+        List<ParsedArgument> parsedCommandLineElements = new List<ParsedArgument>();
         string lastArgumentKey = "";
         ArgumentPrefixes.Sort((x, y) => y.Length.CompareTo(x.Length));
         for (int i = 0; i < commandLine.Length; i++)
@@ -75,7 +75,7 @@ public class CommandLineParser
                 {
                     if (!string.IsNullOrEmpty(lastArgumentKey))
                     {
-                        ParsedCommandLineElement element = new ParsedCommandLineElement(lastArgumentKey, null);
+                        ParsedArgument element = new ParsedArgument(lastArgumentKey, null);
                         parsedCommandLineElements.Add(element);
                     }
                 
@@ -90,13 +90,13 @@ public class CommandLineParser
             
                 if (!commandLine[i].StartsWith(argumentPrefix))
                 {
-                    ParsedCommandLineElement element = new ParsedCommandLineElement(lastArgumentKey, commandLine[i]);
+                    ParsedArgument element = new ParsedArgument(lastArgumentKey, commandLine[i]);
                     lastArgumentKey = "";
                     parsedCommandLineElements.Add(element);
                 }
                 else
                 {
-                    ParsedCommandLineElement element = new ParsedCommandLineElement(lastArgumentKey, null);
+                    ParsedArgument element = new ParsedArgument(lastArgumentKey, null);
                     lastArgumentKey = "";
                     i--;
                     parsedCommandLineElements.Add(element);
@@ -109,7 +109,7 @@ public class CommandLineParser
             return parsedCommandLineElements.ToArray();
         }
         
-        ParsedCommandLineElement element1 = new ParsedCommandLineElement(lastArgumentKey, null);
+        ParsedArgument element1 = new ParsedArgument(lastArgumentKey, null);
         parsedCommandLineElements.Add(element1);
         return parsedCommandLineElements.ToArray();
     }

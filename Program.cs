@@ -1,12 +1,12 @@
-using HsManCommonLibrary.Collections.Transactional.Transactions;
-using HsManCommonLibrary.Collections.Transactional.Transactions.TransactionOperations;
-using HsManCommonLibrary.CommandLine;
+using System.Reflection;
+using HsManCommonLibrary.CommandLine.Matchers;
+using HsManCommonLibrary.CommandLine.Parsers;
 using HsManCommonLibrary.Configuration;
-using HsManCommonLibrary.NestedValues.JsonLikeFormats;
 using HsManCommonLibrary.NestedValues.NestedValueAdapters;
-using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.SaveStrategies;
+using HsManCommonLibrary.Reflections;
 using Newtonsoft.Json;
-using YamlDotNet.Serialization;
+using Newtonsoft.Json.Linq;
 
 namespace HsManCommonLibrary;
 
@@ -15,8 +15,14 @@ class Program
    
     static void Main(string[] args)
     {
-        CommandLineParser parser = new CommandLineParser();
-        var x = parser.Parse("program -c config.json -t json -exe rust_server.exe --executable rustdedicated.exe");
+        TypeWrapper wrapper = new TypeWrapper(typeof(MethodFindOptions));
+        MethodFindOptions options = new MethodFindOptions();
+        options.MemberName = "aaaa";
+        wrapper.SetMemberValue(new MethodFindOptions()
+        {
+            MemberName = "MemberName",
+        }, options, "bbbb");
+
         
     }
 }

@@ -19,6 +19,11 @@ public class ConfigurationRegistryCenter : IConfigurationRegistryCenter
         return oldVal;
     }
 
+    public bool ContainsConfig(string key)
+    {
+        return _registeredConfig.ContainsKey(key);
+    }
+
     public bool UnregisterConfig(string name)
     {
         return _registeredConfig.TryRemove(name, out _);

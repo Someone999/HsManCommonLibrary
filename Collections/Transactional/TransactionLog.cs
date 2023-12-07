@@ -2,11 +2,6 @@ using HsManCommonLibrary.Collections.Transactional.Transactions;
 
 namespace HsManCommonLibrary.Collections.Transactional;
 
-public enum OperationStatus
-{
-    None, Success, Failed
-}
-
 public class TransactionLog<TCollection>
 {
     public TransactionLog(ITransactionOperation<TCollection> operation, object? oldValue, object? newValue, OperationStatus status)
@@ -19,9 +14,9 @@ public class TransactionLog<TCollection>
 
     public DateTime OperationTime { get; } = DateTime.Now;
     public ITransactionOperation<TCollection> Operation { get; }
-    public object? OldValue { get; }
-    public object? NewValue { get; }
-    public OperationStatus Status { get; private set; }
+    public object? OldValue { get; set; }
+    public object? NewValue { get; set; }
+    public OperationStatus Status { get; set; }
 
     public void MarkOperationSuccess() => Status = OperationStatus.Success;
     public void MarkOperationFailed() => Status = OperationStatus.Failed;

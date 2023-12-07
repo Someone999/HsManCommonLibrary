@@ -5,7 +5,8 @@ namespace HsManCommonLibrary.Collections.Transactional.Transactions;
 public class TransactionContext<TCollection>
 {
     private readonly ReaderWriterLockSlim _readerWriterLockSlim = new ReaderWriterLockSlim();
-    private TransactionStatus _transactionStatus = TransactionStatus.Started;
+    public TransactionStatus TransactionStatus { get; private set; } = TransactionStatus.Started;
+
     private readonly TCollection _originalCollection;
     private readonly List<TransactionLog<TCollection>> _executedTransactions = new List<TransactionLog<TCollection>>();
     private readonly List<ITransactionOperation<TCollection>> _operations = new List<ITransactionOperation<TCollection>>();
@@ -31,14 +32,14 @@ public class TransactionContext<TCollection>
             }
             else
             {
-                _transactionStatus = TransactionStatus.Aborted;
+                TransactionStatus = TransactionStatus.Aborted;
                 return;
             }
         }
         
         _executedTransactions.Clear();
         _operations.Clear();
-        _transactionStatus = TransactionStatus.Committed;
+        TransactionStatus = TransactionStatus.Committed;
         _readerWriterLockSlim.ExitWriteLock();
     }
 

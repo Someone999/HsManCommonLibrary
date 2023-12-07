@@ -153,11 +153,21 @@ public class CommonConfigElement : INestedValueStore
 
     public void Persistence(string path, INestedValueStoreSaveStrategy saveStrategy)
     {
+        if (!saveStrategy.Validate(this))
+        {
+            throw new Exception("The nested value store is not valid for this save strategy");
+        }
+        
         saveStrategy.Save(this, path);
     }
     
     public Task PersistenceAsync(string path, INestedValueStoreSaveStrategy saveStrategy)
     {
+        if (!saveStrategy.Validate(this)) 
+        {
+            throw new Exception("The nested value store is not valid for this save strategy");
+        }
+        
         return saveStrategy.SaveAsync(this, path);
     }
    

@@ -43,5 +43,7 @@ public class AssemblyTypeCollection : IEnumerable<Type>
         return matchedTypes.ToArray();
     }
 
+    public TypeWrapper[] ToTypeWrappers() => _types.Select(t => new TypeWrapper(t)).ToArray();
+
     public Type[] GetSubTypesOf<T>() => GetSubTypesOf(typeof(T));
 }

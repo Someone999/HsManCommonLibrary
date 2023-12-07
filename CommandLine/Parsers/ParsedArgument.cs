@@ -1,8 +1,8 @@
-namespace HsManCommonLibrary.CommandLine;
+namespace HsManCommonLibrary.CommandLine.Parsers;
 
-public class ParsedCommandLineElement
+public class ParsedArgument
 {
-    public ParsedCommandLineElement(string argumentKey, string? argumentValue)
+    public ParsedArgument(string argumentKey, string? argumentValue)
     {
         ArgumentKey = argumentKey;
         ArgumentValue = argumentValue;
