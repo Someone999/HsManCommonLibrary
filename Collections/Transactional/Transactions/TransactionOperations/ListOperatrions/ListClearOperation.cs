@@ -1,4 +1,4 @@
-namespace HsManCommonLibrary.Collections.Transactional.Transactions.TransactionOperations;
+namespace HsManCommonLibrary.Collections.Transactional.Transactions.TransactionOperations.ListOperatrions;
 
 public class ListClearOperation<T> : ITransactionOperation<List<T>>
 {
