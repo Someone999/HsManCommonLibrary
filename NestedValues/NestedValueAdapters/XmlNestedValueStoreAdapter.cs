@@ -9,7 +9,7 @@ public class XmlNestedValueStoreAdapter : INestedValueStoreAdapter
     {
         var dict = new Dictionary<string, INestedValueStore>();
         XmlNestedValueStore nestedValueStore = new XmlNestedValueStore(dict);
-        var val = new CommonNestedValueStore((object?) element.Value ?? NullObject.Value);
+        var val = new CommonNestedValueStore((object?) element.Value ?? NullNestedValue.Value);
         nestedValueStore.GetValueAs<Dictionary<string, INestedValueStore>>()?.Add(element.Name, val);
 
         if (element.ChildNodes.Count == 0)
@@ -75,7 +75,7 @@ public class XmlNestedValueStoreAdapter : INestedValueStoreAdapter
         XmlDocument document = new XmlDocument();
         document.LoadXml((string) obj);
         var rootElement = document.DocumentElement;
-        return rootElement == null ? new CommonNestedValueStore(NullObject.Value) : ToXmlNestedValue(rootElement);
+        return rootElement == null ? new CommonNestedValueStore(NullNestedValue.Value) : ToXmlNestedValue(rootElement);
     }
 
     public bool CanConvert(Type? t)

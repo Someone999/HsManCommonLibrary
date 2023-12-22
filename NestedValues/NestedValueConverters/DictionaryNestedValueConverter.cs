@@ -21,7 +21,7 @@ public class DictionaryNestedValueConverter : INestedValueStoreConverter<Diction
             }
             else
             {
-                var val = Equals(nestedVal.GetValue(), NullObject.Value) ? null : nestedVal.GetValue();
+                var val = Equals(nestedVal.GetValue(), NullNestedValue.Value) ? null : nestedVal.GetValue();
                 result.Add(pair.Key, val);
             }
         }

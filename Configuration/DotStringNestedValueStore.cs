@@ -157,7 +157,7 @@ public class DotStringNestedValueStore : INestedValueStore
                 throw new KeyNotFoundException();
             }
 
-            return storedVal.Equals(NullObject.Value);
+            return storedVal.Equals(NullNestedValue.Value);
         }
     }
 

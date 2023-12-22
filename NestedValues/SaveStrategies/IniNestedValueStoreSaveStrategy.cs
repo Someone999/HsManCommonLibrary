@@ -63,7 +63,7 @@ public class IniNestedValueStoreSaveStrategy : INestedValueStoreSaveStrategy
             foreach (var pair1 in dictionary1)
             {
                 var val = pair1.Value.GetValue();
-                if (Equals(val, NullObject.Value))
+                if (Equals(val, NullNestedValue.Value))
                 {
                     val = "null";
                 }

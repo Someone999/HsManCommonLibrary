@@ -48,19 +48,15 @@ public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter
         {
             var pType = p.GetType();
             var key = pType.GetProperty("Key")?.GetValue(p);
-            var value = pType.GetProperty("Value")?.GetValue(p);
-            if (Equals(value, NullObject.Value))
-            {
-                value = null;
-            }
-            
+            var value = pType.GetProperty("Value")?.GetValue(p) ?? null;
+
             if (key == null)
             {
                 continue;
             }
             
             result.Add(key.ToString() ?? throw new InvalidOperationException("Failed to convert key"), 
-                value);
+                value ?? NullNestedValue.Value);
         }
 
         return result;

@@ -29,7 +29,7 @@ public class JObjectNestedValueStoreConverter : INestedValueStoreConverter<JObje
                             jObject.Add(pair.Key, ExpendArray(valueStore));
                             break;
                         default:
-                            storedValue = Equals(storedValue, NullObject.Value) ? null : storedValue;
+                            storedValue = Equals(storedValue, NullNestedValue.Value) ? null : storedValue;
                             jObject.Add(pair.Key, storedValue == null ? JValue.CreateNull() : JToken.FromObject(storedValue));
                             break;
                     }

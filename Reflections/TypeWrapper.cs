@@ -12,6 +12,7 @@ public class TypeWrapper
         _type = type;
     }
 
+    public bool IsAbstract => WrappedType.IsAbstract;
     public Type WrappedType => _type;
     
     public ConstructorInfo? GetConstructor(MethodFindOptions methodFindOptions)
@@ -87,6 +88,11 @@ public class TypeWrapper
 
     public object? CreateInstance(object?[]? parameters)
     {
+        if (IsAbstract)
+        {
+            throw new InvalidOperationException("Can not instant an abstract class or an interface");
+        }
+        
         if (parameters == null)
         {
             return GetConstructor(new MethodFindOptions())?.Invoke(Array.Empty<object>());

@@ -1,16 +1,19 @@
 using System.Collections;
+using System.Configuration;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using HsManCommonLibrary.NameStyleConverters;
 using HsManCommonLibrary.NestedValues.Attributes;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
 using HsManCommonLibrary.Reflections;
+using Newtonsoft.Json;
 
 namespace HsManCommonLibrary.NestedValues.Utils;
 
 public static class ObjectAssigner
 {
     private static readonly object StaticLocker = new();
-    public static void AssignTo(object? obj, INestedValueStore? nestedValueStore, AssignOptions? options)
+    public static void AssignTo(object? obj, INestedValueStore? nestedValueStore, AssignOptions? assignOptions)
     {
         lock (StaticLocker)
         {
@@ -26,18 +29,18 @@ public static class ObjectAssigner
                 var attr = property.GetCustomAttribute<AutoAssignAttribute>();
                 if (attr == null)
                 {
-                    AssignForNonAttribute(nestedValueStore, property, obj, options);
+                    AssignToNonAttribute(property, obj, nestedValueStore, assignOptions);
                 }
                 else
                 {
-                    AssignForHasAttribute(nestedValueStore, property, obj, attr, options);
+                    AssignToHasAttribute(nestedValueStore, property, obj, attr, assignOptions);
                 }
             }
         }
     }
 
-    static void AssignForNonAttribute(INestedValueStore nestedValueStore, PropertyInfo propertyInfo, object? ins
-    , AssignOptions? options)
+    private static void AssignToNonAttribute(PropertyInfo propertyInfo, object? ins, INestedValueStore nestedValueStore,
+        AssignOptions? assignOptions)
     {
         string propertyName = propertyInfo.Name;
         var val = nestedValueStore[propertyName];
@@ -57,156 +60,125 @@ public static class ObjectAssigner
             return;
         }
         
-        SetValue(ins, propertyInfo, val, options);
+        SetValue(propertyInfo, ins, val, assignOptions);
     }
     
-    static void AssignForHasAttribute(INestedValueStore nestedValueStore, PropertyInfo propertyInfo,
-        object? ins, AutoAssignAttribute autoAssignAttribute, AssignOptions? options)
+    private static void AssignToHasAttribute(INestedValueStore nestedValueStore, PropertyInfo propertyInfo,
+        object? ins, AutoAssignAttribute autoAssignAttribute, AssignOptions? assignOptions)
     {
         var path = autoAssignAttribute.Path;
         if (string.IsNullOrEmpty(path))
         {
-            AssignForNonAttribute(nestedValueStore, propertyInfo, ins, options);
+            AssignToNonAttribute(propertyInfo, ins, nestedValueStore, assignOptions);
             return;
         }
         
         if (autoAssignAttribute.IsNestedAssign)
         {
-            AssignTo(ins, nestedValueStore, options);
+            AssignTo(ins, nestedValueStore, assignOptions);
         }
         else
         {
-            INestedValueStoreConverter? converter = null;
             if (autoAssignAttribute.ConverterType != null)
             {
                 var converterTypeWrapper = new TypeWrapper(autoAssignAttribute.ConverterType);
                 object?[]? converterConstructorParams = null;
-                options?.ConstructorParameters.TryGetValue(converterTypeWrapper.WrappedType,
+                assignOptions?.ConstructorParameters.TryGetValue(converterTypeWrapper.WrappedType,
                     out converterConstructorParams);
 
-                converter =
+                var converter = 
                     converterTypeWrapper.CreateInstanceAs<INestedValueStoreConverter>(converterConstructorParams);
+                assignOptions ??= new AssignOptions();
+                assignOptions.ConvertOptions.Converter = converter;
             }
 
             var originalVal = NestedValueStoreUtils.GetNestedValueStoreFromPath(nestedValueStore, path);
-            object? val = converter == null
-                ? originalVal
-                : originalVal?.ConvertWith(converter);
-            
-            SetValue(ins, propertyInfo, val, options);
+            SetValue(propertyInfo, ins, originalVal, assignOptions);
         }
-        
     }
 
-    static void SetValue(object? ins, PropertyInfo propertyInfo, object? val, 
-        AssignOptions? options)
+    private static void SetValue(PropertyInfo propertyInfo, object? ins, object? val, AssignOptions? assignOptions)
     {
-        TypeWrapper propertyTypeWrapper = new TypeWrapper(propertyInfo.PropertyType);
-        if (val is not INestedValueStore nestedValueStore)
+        if (val == null || HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(val, propertyInfo.PropertyType))
         {
             propertyInfo.SetValue(ins, val);
             return;
         }
         
-        if (propertyTypeWrapper.IsSubTypeOf<IDictionary>())
+        Type propertyType = propertyInfo.PropertyType;
+
+        if (CollectionUtils.IsDictionary(propertyType))
         {
-            var dict = CreateDictionary(propertyInfo, nestedValueStore, options);
-            propertyInfo.SetValue(ins, dict);
+            var types = CollectionUtils.GetDictionaryGenericTypes(propertyType);
+            var nestedVal = (INestedValueStore)val;
+            var dict = CollectionUtils.CreateDictionaryFromNestedValue(types.ValueType, nestedVal, assignOptions);
+            propertyInfo.SetValue(ins, MatchDictionary(propertyType, dict));
         }
-        else if (propertyTypeWrapper.IsSubTypeOf<IEnumerable>())
+        else if (CollectionUtils.IsCollection(propertyInfo.PropertyType))
         {
-            var list = CreateCollection(propertyInfo, nestedValueStore, options);
-            propertyInfo.SetValue(ins, list);
+            var elementType = CollectionUtils.GetCollectionGenericType(propertyType);
+            var nestedVal = (INestedValueStore)val;
+            var list = CollectionUtils.CreateListFromNestedValueStore(elementType, nestedVal, assignOptions);
+            propertyInfo.SetValue(ins, MatchCollection(propertyType, list));
         }
         else
         {
-            var currentVal = nestedValueStore.GetValue();
-            if (currentVal != null && !propertyInfo.PropertyType.IsInstanceOfType(currentVal))
+            var nestedVal = (INestedValueStore)val;
+            var currentVal = nestedVal.GetValue();
+            if (NullNestedValue.Value.Equals(currentVal))
             {
-                try
+                currentVal = default;
+                propertyInfo.SetValue(ins,  currentVal);
+                return;
+            }
+
+            if (TypeUtils.NeedToCreateNewObject(propertyType, nestedVal))
+            {
+                TypeUtils.TryCreateInstance(propertyType, nestedVal, assignOptions, out var obj);
+                propertyInfo.SetValue(ins, obj);
+                return;
+            }
+            
+            if (HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(currentVal, propertyType))
+            {
+                propertyInfo.SetValue(ins,  currentVal);
+                return;
+            }
+            
+            if (assignOptions?.ConvertOptions.Converter != null)
+            {
+                currentVal = assignOptions.ConvertOptions.Converter.Convert(nestedVal);
+                propertyInfo.SetValue(ins, currentVal);
+                return;
+            }
+           
+            var allowAutoAdapt = assignOptions?.ConvertOptions.AllowAutoAdapt ?? true;
+            if (allowAutoAdapt && currentVal is IConvertible)
+            {
+                if (propertyType.IsEnum)
                 {
-                    var targetType = propertyInfo.PropertyType.IsEnum
-                        ? Enum.GetUnderlyingType(propertyInfo.PropertyType)
-                        : propertyInfo.PropertyType;
-                    
-                    currentVal = nestedValueStore.Convert(targetType);
+                    propertyType = Enum.GetUnderlyingType(propertyType);
                 }
-                catch (Exception e)
-                {
-                    throw new InvalidCastException(
-                        $"Failed to cast {currentVal?.GetType()} to {propertyInfo.PropertyType}", e);
-                }
+                
+                currentVal = Convert.ChangeType(currentVal, propertyType);
+            }
+            else
+            {
+                throw new InvalidOperationException("Auto-adapt is disallowed");
             }
             
             propertyInfo.SetValue(ins, currentVal);
         }
     }
+
     
-    static object? CreateCollection(PropertyInfo propertyInfo, INestedValueStore nestedValueStore, AssignOptions? options)
+    static object? MatchDictionary(Type collectionType, IDictionary dictionary)
     {
-        Type collectionType = propertyInfo.PropertyType;
-        
-        TypeWrapper collectionTypeWrapper = new TypeWrapper(collectionType);
-        if (!collectionTypeWrapper.IsSubTypeOf(typeof(IEnumerable)))
-        {
-            throw new InvalidOperationException("The type is not enumerable.");
-        }
-        
-        Type[] genericTypes = collectionType.GetGenericArguments();
-        
-        if (genericTypes.Length != 1 && !collectionType.IsArray)
-        {
-            throw new InvalidOperationException("This function can only process collections that have one generic arguments.");
-        }
-
-        Type genericType = collectionType.IsArray
-            ? collectionType.GetElementType() ?? throw new InvalidOperationException()
-            : genericTypes[0];
-        var listType = typeof(List<>).MakeGenericType(genericType);
-        TypeWrapper listTypeWrapper = new TypeWrapper(listType);
-        var list = listTypeWrapper.CreateInstanceAs<IList>(null);
-        if (list == null)
-        {
-            throw new InvalidCastException("Failed to build a list to build elements.");
-        }
-        
-        var storedVal = nestedValueStore.GetValue();
-        if (storedVal == null || storedVal.Equals(NullObject.Value) || storedVal is not IEnumerable enumerable)
-        {
-            return null;
-        }
-
-        TypeWrapper genericTypeWrapper = new TypeWrapper(genericType);
-        object?[]? parameters = null;
-        options?.ConstructorParameters.TryGetValue(genericType, out parameters);
-        bool needInstantType = !genericTypeWrapper.IsSubTypeOf<IConvertible>();
-        
-        if (needInstantType && genericType == typeof(object))
-        {
-            throw new InvalidOperationException("The type 'object' is ambiguous for the constructors");
-        }
-        
-        foreach (INestedValueStore nestedVal in enumerable)
-        {
-            if (needInstantType)
-            {
-                var genericObj = genericTypeWrapper.CreateInstance(parameters);
-                AssignTo(genericObj, (INestedValueStore) nestedVal, null);
-                list.Add(genericObj);
-            }
-            else
-            {
-                list.Add(nestedVal.Convert(genericType));
-            }
-           
-        }
-
-        return !collectionType.IsAssignableFrom(listType)
-            ? MatchCollectionType(collectionType, list)
-            : list;
+        TypeWrapper wrapper = new TypeWrapper(collectionType);
+        return wrapper.CreateInstance(new object?[] { dictionary });
     }
 
-    static object? MatchCollectionType(Type collectionType, IEnumerable enumerable)
+    static object? MatchCollection(Type collectionType, IEnumerable enumerable)
     {
         if (!collectionType.IsArray)
         {
@@ -229,74 +201,6 @@ public static class ObjectAssigner
 
         return arr;
     }
-
-    private static object? CreateDictionary(PropertyInfo propertyInfo, INestedValueStore nestedValueStore, AssignOptions? options)
-    {
-        Type collectionType = propertyInfo.PropertyType;
-        TypeWrapper collectionTypeWrapper = new TypeWrapper(collectionType);
-        if (!collectionTypeWrapper.IsSubTypeOf(typeof(IEnumerable)))
-        {
-            throw new InvalidOperationException("The type is not enumerable.");
-        }
-        
-        Type[] genericTypes = collectionType.GetGenericArguments();
-        
-        if (genericTypes.Length != 2)
-        {
-            throw new InvalidOperationException("This function can only process collections that have one generic arguments.");
-        }
-
-        Type keyType = genericTypes[0];
-        Type valType = genericTypes[1];
-
-        
-        bool valTypeNeedInstant = !typeof(IConvertible).IsAssignableFrom(valType);
-
-        if (keyType != typeof(string))
-        {
-            throw new InvalidOperationException("Nested value can only process the string key");
-        }
-        
-        if (valTypeNeedInstant && valType == typeof(object))
-        {
-            throw new InvalidOperationException("The type 'object' is ambiguous for the constructors");
-        }
-
-        var storedVal = nestedValueStore.GetValueAs<Dictionary<string, INestedValueStore>>();
-        if (storedVal == null)
-        {
-            throw new InvalidCastException("Can not cast stored value to Dictionary<string, INestedValue>");
-        }
-
-        TypeWrapper valTypeWrapper = new TypeWrapper(valType);
-        var dict = collectionTypeWrapper.CreateInstanceAs<IDictionary>(null);
-        if (dict == null)
-        {
-            throw new InvalidCastException("Failed to build a dictionary to build elements.");
-        }
-        
-        foreach (var pair in storedVal)
-        {
-            if (valTypeNeedInstant)
-            {
-                object?[]? constructorParams = null;
-                options?.ConstructorParameters.TryGetValue(valType, out constructorParams);
-                var val = valTypeWrapper.CreateInstance(constructorParams);
-                AssignTo(val, pair.Value, null);
-            }
-            
-            dict.Add(pair.Key, pair.Value.Convert(valType));
-        }
-
-        return !collectionType.IsInstanceOfType(dict)
-            ? MatchDictionary(collectionType, dict)
-            : dict;
-    }
-
-    static object? MatchDictionary(Type collectionType, IDictionary dictionary)
-    {
-        TypeWrapper wrapper = new TypeWrapper(collectionType);
-        return wrapper.CreateInstance(new object?[] { dictionary });
-    }
+    
     
 }

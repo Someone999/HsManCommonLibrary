@@ -177,7 +177,7 @@ public static class ConfigAssigner
             else
             {
                 var val = currentCfg.GetValue();
-                if (Equals(val, NullObject.Value))
+                if (Equals(val, NullNestedValue.Value))
                 {
                     val = null;
                 }
@@ -211,7 +211,7 @@ public static class ConfigAssigner
             
             
             var currentCfg = RecursiveGetParentConfig(syncableConfig, attr.Path, out var memberName);
-            currentCfg.SetValue(memberName, new CommonNestedValueStore(property.GetValue(syncableConfig) ?? NullObject.Value));
+            currentCfg.SetValue(memberName, new CommonNestedValueStore(property.GetValue(syncableConfig) ?? NullNestedValue.Value));
         }
     }
 }

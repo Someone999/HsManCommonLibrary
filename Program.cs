@@ -22,7 +22,7 @@ namespace HsManCommonLibrary;
 
 class Test
 {
-    public Dictionary<string, int> Dict { get; set; } = new Dictionary<string, int>();
+    public Dictionary<string, bool> Dict { get; set; } = new Dictionary<string, bool>();
 }
 
 class Program
@@ -32,14 +32,19 @@ class Program
     {
         NameStyleDetector.AddNameStyle(new UpperCamelCaseNameStyle());
         NameStyleDetector.AddNameStyle(new LowerCamelCaseNameStyle());
-        string json = "{\"dict\": {\"a\": 5, \"b\": 6}}";
+        string json = "{\"dict\": {\"a\": 5, \"b\": 7}}";
         var adapted = new JsonNestedValueStoreAdapter()
             .ToNestedValue(JsonConvert.DeserializeObject<JToken>(json));
 
         Test t = new Test();
         ObjectAssigner.AssignTo(t, adapted, new AssignOptions());
-        Test t1 = new Test();
-        var syncResult = new ReflectionPropertySynchronizer().Synchronize(t, t1);
+        adapted = adapted["dict"];
+        if (adapted == null)
+        {
+            throw new Exception("Fuck you!");
+        }
 
+        
+        ;
     }
 }

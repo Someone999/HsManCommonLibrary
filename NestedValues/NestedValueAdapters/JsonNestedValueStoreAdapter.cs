@@ -1,3 +1,4 @@
+using HsManCommonLibrary.Configuration;
 using Newtonsoft.Json.Linq;
 
 namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
@@ -9,7 +10,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
     {
         if (jToken == null)
         {
-            return new CommonNestedValueStore(NullObject.Value);
+            return new CommonNestedValueStore(NullNestedValue.Value);
         }
         
         switch (jToken)
@@ -19,8 +20,8 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
             case JProperty jProperty:
                 return new CommonNestedValueStore(jProperty.Value);
             case JValue jValue:
-                object val = jValue.Value ?? NullObject.Value;
-                return new CommonNestedValueStore(val);
+                object? val = jValue.Value;
+                return val == null ? NullNestedValue.Value : new CommonNestedValueStore(val);
             case JArray jArray:
                 List<INestedValueStore>? nestedValueStores = new List<INestedValueStore>();
                 foreach (var item in jArray)

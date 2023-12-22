@@ -144,7 +144,7 @@ public class CommonConfigElement : INestedValueStore
             }
             else
             {
-                result.Add(pair.Key, Equals(nestedVal.GetValue(), NullObject.Value) ? null : nestedVal.GetValue());
+                result.Add(pair.Key, Equals(nestedVal.GetValue(), NullNestedValue.Value) ? null : nestedVal.GetValue());
             }
         }
 

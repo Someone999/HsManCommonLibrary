@@ -100,6 +100,11 @@ public class CommonNestedValueStore : INestedValueStore
     {
         lock (_lockManager.AcquireLockObject("ReadWriteLock"))
         {
+            if (_innerVal != null && _innerVal.GetType().IsInstanceOfType(type))
+            {
+                return _innerVal;
+            }
+            
             return _innerVal is IConvertible 
                 ? System.Convert.ChangeType(_innerVal, type) 
                 : throw new InvalidCastException();
@@ -130,7 +135,7 @@ public class CommonNestedValueStore : INestedValueStore
     {
         lock (_lockManager.AcquireLockObject("ReadWriteLock"))
         {
-            return Equals(_innerVal, NullObject.Value);
+            return Equals(_innerVal, NullNestedValue.Value);
         }
     }
 
