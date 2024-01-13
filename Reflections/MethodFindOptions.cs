@@ -9,4 +9,6 @@ public class MethodFindOptions : MemberFindOptions
     public Binder? Binder { get; set; }
     public CallingConventions? CallingConventions { get; set; }
     public ParameterModifier[]? ParameterModifiers { get; set; }
+
+    public new static MethodFindOptions Empty { get; } = new MethodFindOptions();
 }

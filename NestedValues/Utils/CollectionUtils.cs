@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Diagnostics;
+using HsManCommonLibrary.NestedValues.Utils.Caches;
 using HsManCommonLibrary.Reflections;
 
 namespace HsManCommonLibrary.NestedValues.Utils;
@@ -40,7 +42,13 @@ public static class CollectionUtils
     public static IList CreateListFromNestedValueStore(Type elementType, INestedValueStore nestedValueStore, 
         AssignOptions? assignOptions)
     {
+        //Stopwatch stopwatch = new Stopwatch();
+        // stopwatch.Start();
         var list = CreateList(elementType);
+        // stopwatch.Stop();
+        // Console.WriteLine($"Create list: {stopwatch.Elapsed}");
+        // stopwatch.Reset();
+        
         if (nestedValueStore.GetValue() is not List<INestedValueStore> nestedValueStores)
         {
             throw new InvalidOperationException("Object in nested value store is not a list");
@@ -48,27 +56,41 @@ public static class CollectionUtils
 
         foreach (var storedVal in nestedValueStores)
         {
+            
             var storedObj = storedVal.GetValue();
             if (TypeUtils.NeedToCreateNewObject(elementType, storedVal))
             {
+                // stopwatch.Start();
                 TypeUtils.TryCreateInstance(elementType, storedVal, assignOptions, out storedObj);
+                // stopwatch.Stop();
+                // Console.WriteLine($"Create instance: {stopwatch.Elapsed}");
+                // stopwatch.Restart();
                 ObjectAssigner.AssignTo(storedObj, storedVal, assignOptions);
+                // stopwatch.Stop();
+                // Console.WriteLine($"Assign to: {stopwatch.Elapsed}");
                 list.Add(storedObj);
+               
                 continue;
             }
             
-            
-            if (HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(storedObj, elementType))
+            // stopwatch.Restart();
+            if (TypeCompareCache.DefaultInstance.GetIsCompatible(storedObj, elementType))
             {
                 throw new InvalidOperationException($"Can not convert object to type {elementType}");
             }
 
+            // stopwatch.Stop();
+            // Console.WriteLine($"Check compatible: {stopwatch.Elapsed}");
+            // stopwatch.Restart();
             var convertOptions = assignOptions?.ConvertOptions ?? new ConvertOptions();
             convertOptions.TargetType = elementType;
             if (!TryConvert(storedObj, convertOptions, out storedObj))
             {
                 throw new InvalidOperationException($"Can not convert object to type {elementType}");
             }
+            
+            // stopwatch.Stop();
+            // Console.WriteLine($"Convert: {stopwatch.Elapsed}");
 
             list.Add(storedObj);
         }
@@ -96,7 +118,7 @@ public static class CollectionUtils
                 continue;
             }
             
-            if (HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(storedObj, valType))
+            if (TypeCompareCache.DefaultInstance.GetIsCompatible(storedObj, valType))
             {
                 throw new InvalidOperationException($"Can not convert object to type {valType}");
             }
@@ -122,7 +144,7 @@ public static class CollectionUtils
             return true;
         }
 
-        if (convertOptions.TargetType.IsInstanceOfType(source))
+        if (TypeCompareCache.DefaultInstance.GetIsCompatible(source, convertOptions.TargetType))
         {
             converted = source;
             return true;
@@ -172,11 +194,13 @@ public static class CollectionUtils
 
     public static bool IsDictionary(Type t)
     {
-        return !ExcludeDictionaryType.Contains(t) && typeof(IDictionary).IsAssignableFrom(t);
+        return !ExcludeDictionaryType.Contains(t) &&
+               TypeCompareCache.DefaultInstance.GetIsCompatible(t, typeof(IDictionary));
     }
     
     public static bool IsCollection(Type t)
     {
-        return !ExcludeCollectionTypes.Contains(t) && typeof(IEnumerable).IsAssignableFrom(t);
+        return !ExcludeCollectionTypes.Contains(t) &&
+               TypeCompareCache.DefaultInstance.GetIsCompatible(t, typeof(IEnumerable));
     }
 }

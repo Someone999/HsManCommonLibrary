@@ -36,7 +36,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
     }
     private INestedValueStore ExpendJObject(JObject jObject)
     {
-        Dictionary<string, INestedValueStore>? result = new Dictionary<string, INestedValueStore>();
+        Dictionary<string, INestedValueStore>? result = new Dictionary<string, INestedValueStore>(jObject.Count);
         foreach (var pair in jObject)
         {
             result.Add(pair.Key, Expend(pair.Value));

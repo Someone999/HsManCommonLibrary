@@ -26,4 +26,24 @@ public static class EqualityUtils
             _ => a.Equals(b)
         };
     }
+
+    public static bool SequenceEquals<T>(IEnumerable<T> a, IEnumerable<T> b)
+    {
+        var arrA = a.ToArray();
+        var arrB = b.ToArray();
+        if (arrA.Length != arrB.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < arrA.Length; i++)
+        {
+            if (!Equals(arrA[i], arrB[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

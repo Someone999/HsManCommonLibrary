@@ -1,3 +1,5 @@
+using HsManCommonLibrary.NestedValues.Utils;
+
 namespace HsManCommonLibrary.Utils;
 
 public static class TypeUtils
@@ -11,5 +13,10 @@ public static class TypeUtils
 
         return targetType.IsInstanceOfType(sourceObj);
     }
+
     
+    public static bool IsCompatibleType(Type sourceObj, Type targetType)
+    {
+        return targetType.IsInstanceOfType(sourceObj);
+    }
 }

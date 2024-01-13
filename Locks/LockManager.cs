@@ -4,9 +4,9 @@ namespace HsManCommonLibrary.Locks;
 
 public class LockManager
 {
-    private readonly ConcurrentDictionary<string, object> _lockers = new ConcurrentDictionary<string, object>();
-    private readonly ConcurrentDictionary<string, int> _usage = new ConcurrentDictionary<string, int>();
-    private readonly ConcurrentDictionary<string, int> _zeroReferenceCounts = new ConcurrentDictionary<string, int>();
+    private readonly Dictionary<string, object> _lockers = new Dictionary<string, object>();
+    private readonly Dictionary<string, int> _usage = new Dictionary<string, int>();
+    private readonly Dictionary<string, int> _zeroReferenceCounts = new Dictionary<string, int>();
 
     private readonly ReaderWriterLockSlim _removeZeroRefLockReadWriterLockSlim = new ReaderWriterLockSlim();
    
@@ -15,7 +15,7 @@ public class LockManager
 
     string? GetLeastUsedLock()
     {
-        if (_usage.IsEmpty)
+        if (_usage.Count == 0)
         {
             return null;
         }
@@ -36,7 +36,7 @@ public class LockManager
 
             if (!_zeroReferenceCounts.ContainsKey(reference.Key))
             {
-                _zeroReferenceCounts.TryAdd(reference.Key, 1);
+                _zeroReferenceCounts.Add(reference.Key, 1);
             }
             else
             {
@@ -61,9 +61,9 @@ public class LockManager
 
         foreach (var lockName in bag)
         {
-            _lockers.TryRemove(lockName, out _);
-            _usage.TryRemove(lockName, out _);
-            _zeroReferenceCounts.TryRemove(lockName, out _);
+            _lockers.Remove(lockName);
+            _usage.Remove(lockName);
+            _zeroReferenceCounts.Remove(lockName);
         }
 
         _removeZeroRefLockReadWriterLockSlim.ExitWriteLock();
@@ -79,13 +79,13 @@ public class LockManager
                 string? leastUsedLock = GetLeastUsedLock();
                 if (leastUsedLock != null)
                 {
-                    _lockers.TryRemove(leastUsedLock, out _);
-                    _usage.TryRemove(leastUsedLock, out _);
+                    _lockers.Remove(leastUsedLock);
+                    _usage.Remove(leastUsedLock);
                 }
             }
 
-            _lockers.TryAdd(name, retObject = new object());
-            _usage.TryAdd(name, 1);
+            _lockers.Add(name, retObject = new object());
+            _usage.Add(name, 1);
         }
         else
         {
@@ -95,6 +95,4 @@ public class LockManager
 
         return retObject;
     }
-    
-    
 }

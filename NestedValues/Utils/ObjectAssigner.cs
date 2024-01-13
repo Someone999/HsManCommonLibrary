@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Configuration;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using HsManCommonLibrary.Exceptions;
 using HsManCommonLibrary.NameStyleConverters;
 using HsManCommonLibrary.NestedValues.Attributes;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.Utils.Caches;
 using HsManCommonLibrary.Reflections;
 using Newtonsoft.Json;
 
@@ -13,29 +16,55 @@ namespace HsManCommonLibrary.NestedValues.Utils;
 public static class ObjectAssigner
 {
     private static readonly object StaticLocker = new();
+    public static PropertyCache PropertyCache => PropertyCache.DefaultInstance;
+
     public static void AssignTo(object? obj, INestedValueStore? nestedValueStore, AssignOptions? assignOptions)
     {
-        lock (StaticLocker)
+        if (obj == null || nestedValueStore == null)
         {
-            if (obj == null || nestedValueStore == null)
+            return;
+        }
+
+        //Stopwatch stopwatch = new Stopwatch();
+        //stopwatch.Start();
+        var type = obj.GetType();
+        
+        PropertyCache.AddType(type);
+        PropertyCache.CacheAllAccessors();
+
+
+        //stopwatch.Stop();
+        //Console.WriteLine($"GetProperties: {stopwatch.Elapsed}");
+        //stopwatch.Reset();
+
+        var properties = PropertyCache.GetProperties(type) ?? Array.Empty<PropertyInfo>();
+        foreach (var property in properties)
+        {
+            //stopwatch.Start();
+            AutoAssignAttribute? attr;
+            attr = AttributeCache.DefaultInstance.GetAttribute<AutoAssignAttribute>(property);
+            
+            if (attr == null)
             {
-                return;
+                attr = property.GetCustomAttribute<AutoAssignAttribute>();
+                if (attr != null)
+                {
+                    AttributeCache.DefaultInstance.AddItem(property, attr);
+                }
             }
             
-            var type = obj.GetType();
-            var properties = type.GetProperties();
-            foreach (var property in properties)
+            
+            if (attr == null)
             {
-                var attr = property.GetCustomAttribute<AutoAssignAttribute>();
-                if (attr == null)
-                {
-                    AssignToNonAttribute(property, obj, nestedValueStore, assignOptions);
-                }
-                else
-                {
-                    AssignToHasAttribute(nestedValueStore, property, obj, attr, assignOptions);
-                }
+                AssignToNonAttribute(property, obj, nestedValueStore, assignOptions);
             }
+            else
+            {
+                AssignToHasAttribute(nestedValueStore, property, obj, attr, assignOptions);
+            }
+
+            // stopwatch.Stop();
+            // Console.WriteLine($"SetProperty: {stopwatch.Elapsed}");
         }
     }
 
@@ -51,7 +80,7 @@ public static class ObjectAssigner
             {
                 propertyName = new LowerCamelCaseNameStyle().Normalize(detectResult.NameParts);
             }
-            
+
             val = nestedValueStore[propertyName];
         }
 
@@ -59,10 +88,10 @@ public static class ObjectAssigner
         {
             return;
         }
-        
+
         SetValue(propertyInfo, ins, val, assignOptions);
     }
-    
+
     private static void AssignToHasAttribute(INestedValueStore nestedValueStore, PropertyInfo propertyInfo,
         object? ins, AutoAssignAttribute autoAssignAttribute, AssignOptions? assignOptions)
     {
@@ -72,7 +101,7 @@ public static class ObjectAssigner
             AssignToNonAttribute(propertyInfo, ins, nestedValueStore, assignOptions);
             return;
         }
-        
+
         if (autoAssignAttribute.IsNestedAssign)
         {
             AssignTo(ins, nestedValueStore, assignOptions);
@@ -86,7 +115,7 @@ public static class ObjectAssigner
                 assignOptions?.ConstructorParameters.TryGetValue(converterTypeWrapper.WrappedType,
                     out converterConstructorParams);
 
-                var converter = 
+                var converter =
                     converterTypeWrapper.CreateInstanceAs<INestedValueStoreConverter>(converterConstructorParams);
                 assignOptions ??= new AssignOptions();
                 assignOptions.ConvertOptions.Converter = converter;
@@ -99,12 +128,18 @@ public static class ObjectAssigner
 
     private static void SetValue(PropertyInfo propertyInfo, object? ins, object? val, AssignOptions? assignOptions)
     {
-        if (val == null || HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(val, propertyInfo.PropertyType))
+        if (val == null || TypeCompareCache.DefaultInstance.GetIsCompatible(val, propertyInfo.PropertyType))
         {
             propertyInfo.SetValue(ins, val);
             return;
         }
-        
+
+        var propertySetter = PropertyCache.GetAccessors(propertyInfo)?.Setter;
+        if (propertySetter == null)
+        {
+            return;
+        }
+
         Type propertyType = propertyInfo.PropertyType;
 
         if (CollectionUtils.IsDictionary(propertyType))
@@ -112,7 +147,7 @@ public static class ObjectAssigner
             var types = CollectionUtils.GetDictionaryGenericTypes(propertyType);
             var nestedVal = (INestedValueStore)val;
             var dict = CollectionUtils.CreateDictionaryFromNestedValue(types.ValueType, nestedVal, assignOptions);
-            propertyInfo.SetValue(ins, MatchDictionary(propertyType, dict));
+            propertySetter.Invoke(ins, new[] { MatchDictionary(propertyType, dict) });
         }
         else if (CollectionUtils.IsCollection(propertyInfo.PropertyType))
         {
@@ -128,30 +163,30 @@ public static class ObjectAssigner
             if (NullNestedValue.Value.Equals(currentVal))
             {
                 currentVal = default;
-                propertyInfo.SetValue(ins,  currentVal);
+                propertySetter.Invoke(ins, new[] { currentVal });
                 return;
             }
 
             if (TypeUtils.NeedToCreateNewObject(propertyType, nestedVal))
             {
                 TypeUtils.TryCreateInstance(propertyType, nestedVal, assignOptions, out var obj);
-                propertyInfo.SetValue(ins, obj);
+                propertySetter.Invoke(ins, new[] { obj });
                 return;
             }
-            
-            if (HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(currentVal, propertyType))
+
+            if (TypeCompareCache.DefaultInstance.GetIsCompatible(currentVal, propertyType))
             {
-                propertyInfo.SetValue(ins,  currentVal);
+                propertySetter.Invoke(ins, new[] { currentVal });
                 return;
             }
-            
+
             if (assignOptions?.ConvertOptions.Converter != null)
             {
                 currentVal = assignOptions.ConvertOptions.Converter.Convert(nestedVal);
-                propertyInfo.SetValue(ins, currentVal);
+                propertySetter.Invoke(ins, new[] { currentVal });
                 return;
             }
-           
+
             var allowAutoAdapt = assignOptions?.ConvertOptions.AllowAutoAdapt ?? true;
             if (allowAutoAdapt && currentVal is IConvertible)
             {
@@ -159,19 +194,19 @@ public static class ObjectAssigner
                 {
                     propertyType = Enum.GetUnderlyingType(propertyType);
                 }
-                
+
                 currentVal = Convert.ChangeType(currentVal, propertyType);
             }
             else
             {
                 throw new InvalidOperationException("Auto-adapt is disallowed");
             }
-            
-            propertyInfo.SetValue(ins, currentVal);
+
+            propertySetter.Invoke(ins, new[] { currentVal });
         }
     }
 
-    
+
     static object? MatchDictionary(Type collectionType, IDictionary dictionary)
     {
         TypeWrapper wrapper = new TypeWrapper(collectionType);
@@ -201,6 +236,4 @@ public static class ObjectAssigner
 
         return arr;
     }
-    
-    
 }

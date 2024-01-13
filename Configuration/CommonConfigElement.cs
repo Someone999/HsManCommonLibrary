@@ -1,75 +1,61 @@
-using HsManCommonLibrary.Locks;
+using System.Text;
 using HsManCommonLibrary.NestedValues;
 using HsManCommonLibrary.NestedValues.NestedValueAdapters;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
 using HsManCommonLibrary.NestedValues.NestedValueDeserializer;
 using HsManCommonLibrary.NestedValues.SaveStrategies;
 using HsManCommonLibrary.ValueHolders;
-using YamlDotNet.Serialization;
 
 namespace HsManCommonLibrary.Configuration;
 
 public class CommonConfigElement : INestedValueStore
 {
-    private readonly LockManager _lockManager = new LockManager();
     private readonly INestedValueStore _config;
 
     public CommonConfigElement(INestedValueStore nestedValueStore)
     {
         _config = nestedValueStore;
     }
-    
+
     public CommonConfigElement(Dictionary<string, object> dictionary)
     {
         _config = new DictionaryNestedValueStoreAdapter().ToNestedValue(dictionary);
     }
-    
+
     public CommonConfigElement(object obj)
     {
         _config = new DictionaryNestedValueStoreAdapter().ToNestedValue(obj);
     }
-    
+
     public virtual object? GetValue()
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return _config.GetValue();
-        }
+        return _config.GetValue();
     }
 
     public virtual T? GetValueAs<T>()
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        if (typeof(T) != typeof(Dictionary<string, object>))
         {
-            if (typeof(T) != typeof(Dictionary<string, object>))
-            {
-                throw new InvalidCastException();
-            }
-
-            return (T?)_config;
+            throw new InvalidCastException();
         }
+
+        return (T?)_config;
     }
 
     protected INestedValueStore? GetValue(string key)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return _config[key];
-        }
+        return _config[key];
     }
-    
+
     public virtual void SetValue(string key, INestedValueStore? val)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        var nestedVal = _config;
+        if (nestedVal == null)
         {
-            var nestedVal = _config;
-            if (nestedVal == null)
-            {
-                throw new InvalidOperationException();
-            }
-            
-            nestedVal[key] = new CommonNestedValueStore(val);
+            throw new InvalidOperationException();
         }
+
+        nestedVal[key] = new CommonNestedValueStore(val);
     }
 
     public virtual INestedValueStore? this[string key]
@@ -80,10 +66,7 @@ public class CommonConfigElement : INestedValueStore
 
     public virtual object Convert(Type type)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return _config;
-        }
+        return _config;
     }
 
     public virtual T? Convert<T>()
@@ -93,10 +76,7 @@ public class CommonConfigElement : INestedValueStore
             throw new InvalidCastException();
         }
 
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return (T?)_config;
-        }
+        return (T?)_config;
     }
 
     public virtual object ConvertWith(INestedValueStoreConverter converter)
@@ -111,10 +91,8 @@ public class CommonConfigElement : INestedValueStore
             throw new InvalidCastException();
         }
 
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return (T?)_config;
-        }
+
+        return (T?)_config;
     }
 
     public virtual bool IsNull(string key)
@@ -124,11 +102,8 @@ public class CommonConfigElement : INestedValueStore
 
     public virtual Dictionary<string, object?> ToDictionary()
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return ExpendInternal(_config.GetValue() as Dictionary<string, INestedValueStore> ??
-                                  throw new InvalidCastException());
-        }
+        return ExpendInternal(_config.GetValue() as Dictionary<string, INestedValueStore> ??
+                             throw new InvalidCastException());
     }
 
     protected virtual Dictionary<string, object?> ExpendInternal(Dictionary<string, INestedValueStore> dict)
@@ -137,7 +112,7 @@ public class CommonConfigElement : INestedValueStore
         foreach (var pair in dict)
         {
             var nestedVal = pair.Value;
-            
+
             if (nestedVal.GetValue() is Dictionary<string, INestedValueStore> d)
             {
                 result.Add(pair.Key, ExpendInternal(d));
@@ -151,27 +126,28 @@ public class CommonConfigElement : INestedValueStore
         return result;
     }
 
-    public void Persistence(string path, INestedValueStoreSaveStrategy saveStrategy)
+    public void Save(Stream stream, INestedValueStoreSaveStrategy saveStrategy, Encoding? encoding = null)
     {
         if (!saveStrategy.Validate(this))
         {
             throw new Exception("The nested value store is not valid for this save strategy");
         }
-        
-        saveStrategy.Save(this, path);
+
+        saveStrategy.Save(this, stream, encoding);
     }
-    
-    public Task PersistenceAsync(string path, INestedValueStoreSaveStrategy saveStrategy)
+
+    public async Task SaveAsync(Stream stream, INestedValueStoreSaveStrategy saveStrategy, Encoding? encoding = null)
     {
-        if (!saveStrategy.Validate(this)) 
+        if (!saveStrategy.Validate(this))
         {
             throw new Exception("The nested value store is not valid for this save strategy");
         }
-        
-        return saveStrategy.SaveAsync(this, path);
+
+
+        await saveStrategy.SaveAsync(this, stream, encoding);
     }
-   
-    
+
+
     public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
     {
         return storeDeserializer.Deserialize(this);
@@ -184,59 +160,43 @@ public class CommonConfigElement : INestedValueStore
 
     public ValueHolder<INestedValueStore> GetMemberAsValueHolder(string memberName)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return new ValueHolder<INestedValueStore>(_config[memberName]);
-        }
+        return new ValueHolder<INestedValueStore>(_config[memberName]);
     }
 
     public ValueHolder<T> GetMemberValueAsValueHolder<T>(string memberName)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return new ValueHolder<T>((T?)_config[memberName]?.GetValue());
-        }
+        return new ValueHolder<T>((T?)_config[memberName]?.GetValue());
     }
 
     public bool TryGetValue<T>(out T? value)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            value = (T)(object)_config;
-            return true;
-        }
+        value = (T)_config;
+        return true;
     }
 
     public bool TryGetMember(string name, out INestedValueStore? value)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        var val = GetValue(name);
+        if (val != null)
         {
-            var val = GetValue(name);
-            if (val != null)
-            {
-                value = val;
-                return true;
-            }
-
-            value = null;
-            return false;
+            value = val;
+            return true;
         }
+
+        value = null;
+        return false;
     }
 
     public bool TryGetMemberValue<T>(string name, out T? value)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        var val = GetValue(name)?.GetValue();
+        if (val == null)
         {
-            var val = GetValue(name)?.GetValue();
-            if (val == null)
-            {
-                value = default;
-                return false;
-            }
-
-            value = (T)val;
-            return true;
+            value = default;
+            return false;
         }
+
+        value = (T)val;
+        return true;
     }
-    
 }

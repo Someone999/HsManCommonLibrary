@@ -9,7 +9,7 @@ namespace HsManCommonLibrary.Configuration;
 public class DotStringNestedValueStore : INestedValueStore
 {
     private readonly INestedValueStore _nestedValue = new CommonNestedValueStore(new Dictionary<string, INestedValueStore>());
-    private readonly LockManager _lockManager = new LockManager();
+    private readonly LockManager _lockManager = LockerManagerPool.Default.AcquireObject().PooledObject;
     public void Add(string dotString)
     {
         string[] levels = dotString.Split('.');

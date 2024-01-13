@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace HsManCommonLibrary.NestedValues.SaveStrategies;
 
 public interface INestedValueStoreSaveStrategy
@@ -5,6 +7,6 @@ public interface INestedValueStoreSaveStrategy
     void Initialize();
     bool Validate(INestedValueStore nestedValueStore);
     void Log();
-    void Save(INestedValueStore nestedValueStore, string path);
-    Task SaveAsync(INestedValueStore nestedValueStore, string path);
+    void Save(INestedValueStore nestedValueStore, Stream stream, Encoding? encoding = null);
+    Task SaveAsync(INestedValueStore nestedValueStore, Stream stream, Encoding? encoding = null);
 }

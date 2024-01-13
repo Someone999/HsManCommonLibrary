@@ -9,7 +9,6 @@ namespace HsManCommonLibrary.NestedValues;
 public class CommonNestedValueStore : INestedValueStore
 {
     private readonly object? _innerVal;
-    private readonly LockManager _lockManager = new LockManager();
 
     public CommonNestedValueStore(object? innerVal)
     {
@@ -18,76 +17,62 @@ public class CommonNestedValueStore : INestedValueStore
 
     private INestedValueStore? GetValue(string key)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        switch (_innerVal)
         {
-            switch (_innerVal)
-            {
-                case Dictionary<string, INestedValueStore> dictionary:
-                    return !dictionary.ContainsKey(key) ? null : dictionary[key];
-                case Dictionary<string, object> objDict:
-                    return new CommonNestedValueStore(!objDict.ContainsKey(key) ? null : objDict[key]);
-                default:
-                    if (_innerVal == null)
-                    {
-                        return null;
-                    }
-                    
-                    var r = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())?
-                        .ToNestedValue(_innerVal)[key];
+            case Dictionary<string, INestedValueStore> dictionary:
+                return !dictionary.ContainsKey(key) ? null : dictionary[key];
+            case Dictionary<string, object> objDict:
+                return new CommonNestedValueStore(!objDict.ContainsKey(key) ? null : objDict[key]);
+            default:
+                if (_innerVal == null)
+                {
+                    return null;
+                }
 
-                    return new CommonNestedValueStore(r ?? _innerVal);
-            }
+                var r = NestedValueAdapterManager.GetAdapterByAdaptableType(_innerVal.GetType())?
+                    .ToNestedValue(_innerVal)[key];
+
+                return new CommonNestedValueStore(r ?? _innerVal);
         }
     }
-        
+
     public object? GetValue()
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return _innerVal; 
-        }
+        return _innerVal;
     }
 
     public T? GetValueAs<T>()
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        if (_innerVal == null)
         {
-            if (_innerVal == null)
-            {
-                return default;
-            }
-        
-            return (T)_innerVal;
+            return default;
         }
+
+        return (T)_innerVal;
     }
 
     public void SetValue(string key, INestedValueStore? val)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        var tmpValue = _innerVal;
+        var objType = _innerVal?.GetType();
+        if (objType == null)
         {
-            
-            var tmpValue = _innerVal;
-            var objType = _innerVal?.GetType();
-            if(objType == null)
-            {
-                return;
-            }
-            
-            var adapter = NestedValueAdapterManager.GetAdapterByAdaptableType(objType);
-            if (adapter != null)
-            {
-                tmpValue = adapter.ToNestedValue(_innerVal).GetValue();
-            }
-            
-
-
-            if (tmpValue is not Dictionary<string, INestedValueStore> dictionary)
-            {
-                throw new InvalidOperationException();
-            }
-
-            dictionary[key] = val ?? throw new ArgumentNullException();
+            return;
         }
+
+        var adapter = NestedValueAdapterManager.GetAdapterByAdaptableType(objType);
+        if (adapter != null)
+        {
+            tmpValue = adapter.ToNestedValue(_innerVal).GetValue();
+        }
+
+
+        if (tmpValue is not Dictionary<string, INestedValueStore> dictionary)
+        {
+            throw new InvalidOperationException();
+        }
+
+        dictionary[key] = val ?? throw new ArgumentNullException();
     }
 
     public INestedValueStore? this[string key]
@@ -98,45 +83,36 @@ public class CommonNestedValueStore : INestedValueStore
 
     public object Convert(Type type)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        if (_innerVal != null && _innerVal.GetType().IsInstanceOfType(type))
         {
-            if (_innerVal != null && _innerVal.GetType().IsInstanceOfType(type))
-            {
-                return _innerVal;
-            }
-            
-            return _innerVal is IConvertible 
-                ? System.Convert.ChangeType(_innerVal, type) 
-                : throw new InvalidCastException();
+            return _innerVal;
         }
+
+        var ret = _innerVal is IConvertible
+            ? System.Convert.ChangeType(_innerVal, type)
+            : throw new InvalidCastException();
+        return ret;
     }
 
-    public T? Convert<T>() => (T?) Convert(typeof(T));
-       
+    public T? Convert<T>() => (T?)Convert(typeof(T));
+
 
     public object? ConvertWith(INestedValueStoreConverter converter)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return converter.Convert(this);
-        }
+        var ret = converter.Convert(this);
+        return ret;
     }
 
     public T? ConvertWith<T>(INestedValueStoreConverter<T> converter)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return converter.Convert(this);
-        }
-        
+        var ret = converter.Convert(this);
+        return ret;
     }
 
     public bool IsNull(string key)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return Equals(_innerVal, NullNestedValue.Value);
-        }
+        var ret = Equals(_innerVal, NullNestedValue.Value);
+        return ret;
     }
 
     public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
@@ -152,65 +128,51 @@ public class CommonNestedValueStore : INestedValueStore
 
     public ValueHolder<INestedValueStore> GetMemberAsValueHolder(string memberName)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return new ValueHolder<INestedValueStore>(GetValue(memberName));
-        }
-        
+        var ret = new ValueHolder<INestedValueStore>(GetValue(memberName));
+        return ret;
     }
 
     public ValueHolder<T> GetMemberValueAsValueHolder<T>(string memberName)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
-        {
-            return new ValueHolder<T>((T?)GetValue(memberName)?.GetValue());
-        }
+        var ret = new ValueHolder<T>((T?)GetValue(memberName)?.GetValue());
+        return ret;
     }
 
     public bool TryGetValue<T>(out T? value)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        if (_innerVal == null)
         {
-            if (_innerVal == null)
-            {
-                value = default;
-                return false;
-            }
-
-            value = (T)_innerVal;
-            return true;
+            value = default;
+            return false;
         }
+
+        value = (T)_innerVal;
+        return true;
     }
 
     public bool TryGetMember(string name, out INestedValueStore? value)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        var memberVal = GetValue(name);
+        if (memberVal == null)
         {
-            var memberVal = GetValue(name);
-            if (memberVal == null)
-            {
-                value = null;
-                return false;
-            }
-
-            value = memberVal;
-            return true;
+            value = null;
+            return false;
         }
+
+        value = memberVal;
+        return true;
     }
 
     public bool TryGetMemberValue<T>(string name, out T? value)
     {
-        lock (_lockManager.AcquireLockObject("ReadWriteLock"))
+        var val = GetValue(name);
+        if (val == null)
         {
-            var val = GetValue(name);
-            if (val == null)
-            {
-                value = default;
-                return false;
-            }
-
-            value = (T)val;
-            return true;
+            value = default;
+            return false;
         }
+
+        value = (T)val;
+        return true;
     }
 }

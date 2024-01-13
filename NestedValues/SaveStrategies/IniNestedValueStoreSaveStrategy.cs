@@ -41,7 +41,7 @@ public class IniNestedValueStoreSaveStrategy : INestedValueStoreSaveStrategy
     {
     }
 
-    public void Save(INestedValueStore nestedValueStore, string path)
+    public void Save(INestedValueStore nestedValueStore, Stream stream, Encoding? encoding = null)
     {
         var storedVal = nestedValueStore.GetValue();
         if (storedVal is not Dictionary<string, INestedValueStore> dictionary)
@@ -72,11 +72,13 @@ public class IniNestedValueStoreSaveStrategy : INestedValueStoreSaveStrategy
             }
         }
         
-        File.WriteAllText(path, configBuilder.ToString());
+        encoding ??= Encoding.UTF8;
+        var bts = encoding.GetBytes(configBuilder.ToString());
+        stream.Write(bts, 0, bts.Length);
     }
 
-    public Task SaveAsync(INestedValueStore nestedValueStore, string path)
+    public Task SaveAsync(INestedValueStore nestedValueStore, Stream stream, Encoding? encoding = null)
     {
-        return Task.Run(() => Save(nestedValueStore, path));
+        return Task.Run(() => Save(nestedValueStore, stream, encoding));
     }
 }

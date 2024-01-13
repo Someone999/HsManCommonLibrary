@@ -1,3 +1,5 @@
+using HsManCommonLibrary.Exceptions;
+using HsManCommonLibrary.NestedValues.Utils.Caches;
 using HsManCommonLibrary.Reflections;
 
 namespace HsManCommonLibrary.NestedValues.Utils;
@@ -11,13 +13,23 @@ public static class TypeUtils
             return elementType.IsValueType;
         }
 
+        var val0 = nestedValueStore.GetValue();
+        bool isCompatible = TypeCompareCache.DefaultInstance.GetIsCompatible(val0, elementType);
+        
+        if (isCompatible)
+        {
+            return false;
+        }
+
         var isDictionary = nestedValueStore.GetValue() is Dictionary<string, INestedValueStore>;
-        var isCompatible =
-            HsManCommonLibrary.Utils.TypeUtils.IsCompatibleType(nestedValueStore.GetValue(), elementType);
+        
         
         return !isCompatible && isDictionary;
     }
+    
 
+    
+    
     public static bool TryCreateInstance(Type t, INestedValueStore nestedValueStore, AssignOptions? assignOptions,
         out object? ins)
     {
@@ -32,27 +44,49 @@ public static class TypeUtils
                 assignOptions?.ConstructorParameters.TryGetValue(t, out parameters);
             }
 
-            var typeWrapper = new TypeWrapper(t);
-            var cons = typeWrapper.GetConstructor(new MethodFindOptions()
+            var types = parameters?.Select(p => p?.GetType()).ToArray() ?? Array.Empty<Type>();
+            var cachedCons = ConstructorCache.DefaultInstance.GetConstructor(t, types);
+            if (cachedCons == null)
             {
-                ParameterTypes = parameters?.Select(p => p?.GetType()).ToArray() ?? Array.Empty<Type>()
-            });
+                cachedCons = ConstructorCache.DefaultInstance.GetConstructor(t, Type.EmptyTypes);
+            }
+            else
+            {
+                ins = cachedCons.Invoke(parameters);
+                return true;
+            }
 
+            if (cachedCons != null)
+            {
+                ins = cachedCons.Invoke(null);
+                return true;
+            }
+
+            var parameterizedMethodFindOptions = new MethodFindOptions()
+            {
+                ParameterTypes = types
+            };
+            var typeWrapper = new TypeWrapper(t);
+            var cons = typeWrapper.GetConstructor(parameterizedMethodFindOptions);
+            
             if (cons == null)
             {
-                ins = typeWrapper.CreateInstance(null);
-                return ins != null;
+                ConstructorCache.DefaultInstance.CacheConstructor(t, MethodFindOptions.Empty);
+                cons = ConstructorCache.DefaultInstance.GetConstructor(t, Type.EmptyTypes) ?? 
+                       throw new HsManInternalException();
+                
+                ins = cons.Invoke(null);
+                return true;
             }
             
+            ConstructorCache.DefaultInstance.CacheConstructor(t, MethodFindOptions.Empty);
             ins = typeWrapper.CreateInstance(parameters);
             return ins != null;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             ins = null;
             return false;
         }
-       
-
     }
 }
