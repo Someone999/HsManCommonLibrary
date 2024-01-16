@@ -83,7 +83,7 @@ public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter<Dictio
 
    
     
-    public INestedValueStore ToNestedValue(object? obj)
+    INestedValueStore INestedValueStoreAdapter.ToNestedValue(object? obj)
     {
         if (obj == null)
         {

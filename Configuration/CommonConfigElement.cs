@@ -17,14 +17,14 @@ public class CommonConfigElement : INestedValueStore
         _config = nestedValueStore;
     }
 
-    public CommonConfigElement(Dictionary<string, object> dictionary)
+    public CommonConfigElement(Dictionary<string, object?> dictionary)
     {
         _config = new DictionaryNestedValueStoreAdapter().ToNestedValue(dictionary);
     }
 
     public CommonConfigElement(object obj)
     {
-        _config = new DictionaryNestedValueStoreAdapter().ToNestedValue(obj);
+        _config = new DictionaryNestedValueStoreAdapter().ToNestedValue(obj as Dictionary<string, object?>);
     }
 
     public virtual object? GetValue()

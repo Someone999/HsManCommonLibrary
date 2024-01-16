@@ -50,7 +50,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter<JToken>
         return Expend(obj);
     }
 
-    public INestedValueStore ToNestedValue(object? obj)
+    INestedValueStore INestedValueStoreAdapter.ToNestedValue(object? obj)
     {
         if (obj is not JToken token)
         {
