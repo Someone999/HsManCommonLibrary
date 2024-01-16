@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
-public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
+public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter<JToken>
 {
 
     private INestedValueStore Expend(JToken? jToken)
@@ -44,6 +44,12 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
 
         return new CommonNestedValueStore(result);
     }
+
+    public INestedValueStore ToNestedValue(JToken? obj)
+    {
+        return Expend(obj);
+    }
+
     public INestedValueStore ToNestedValue(object? obj)
     {
         if (obj is not JToken token)
@@ -51,7 +57,7 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter
             throw new NotSupportedException();
         }
 
-        return Expend(token);
+        return ToNestedValue(token);
     }
         
 

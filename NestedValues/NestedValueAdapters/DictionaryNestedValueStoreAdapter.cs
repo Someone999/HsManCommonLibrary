@@ -3,7 +3,7 @@ using HsManCommonLibrary.Configuration;
 
 namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
-public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter
+public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter<Dictionary<string, object?>>
 {
     Dictionary<string, object?> Expend(Dictionary<string, object?>? dictionary)
     {
@@ -84,6 +84,21 @@ public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter
    
     
     public INestedValueStore ToNestedValue(object? obj)
+    {
+        if (obj == null)
+        {
+            return NullNestedValue.Value;
+        }
+        
+        if (CanConvert(obj.GetType()) && obj is Dictionary<string, object?> dict)
+        {
+            return ToNestedValue(dict);
+        }
+
+        throw new InvalidOperationException();
+    }
+
+    public INestedValueStore ToNestedValue(Dictionary<string, object?>? obj)
     {
         if (!IsCompatible(obj?.GetType()))
         {
