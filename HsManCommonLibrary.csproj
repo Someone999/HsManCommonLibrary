@@ -6,9 +6,13 @@
         <TargetFrameworks>net6.0;net6.0-windows;net7.0;net7.0-windows;net46;net461;net462;net472</TargetFrameworks>
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Title>CommonLibrary</Title>
-        <Version>1.1.10</Version>
+        <Title>HsManCommonLibrary</Title>
+        <Version>1.1.9</Version>
         <IsPackable>true</IsPackable>
+        <Authors>Someone999</Authors>
+        <Description>A simple library to support some basic functions.</Description>
+        <RepositoryUrl>https://github.com/Someone999/HsManCommonLibrary</RepositoryUrl>
+        <PackageTags>CommonLib</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

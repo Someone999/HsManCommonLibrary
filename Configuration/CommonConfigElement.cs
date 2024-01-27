@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using HsManCommonLibrary.NestedValues;
 using HsManCommonLibrary.NestedValues.NestedValueAdapters;

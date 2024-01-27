@@ -1,5 +1,5 @@
 namespace HsManCommonLibrary.Exceptions;
 
-public class LockObjectNullException : PluginException
+public class LockObjectNullException : HsManException
 {
 }

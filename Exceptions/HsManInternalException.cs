@@ -1,6 +1,6 @@
 namespace HsManCommonLibrary.Exceptions;
 
-public class HsManInternalException : Exception
+public class HsManInternalException : HsManException
 {
     public HsManInternalException()
     {
