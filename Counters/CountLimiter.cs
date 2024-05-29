@@ -38,7 +38,7 @@ public class CountLimiter
             
             _counter = 0;
             _stopwatch.Reset();
-            OnOverFrequency.Invoke(this, EventArgs.Empty);
+            OnOverFrequency?.Invoke(this, EventArgs.Empty);
         }
     }
 }

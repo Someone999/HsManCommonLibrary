@@ -23,7 +23,7 @@ public class JsonNestedValueStoreSaveStrategy : INestedValueStoreSaveStrategy
     {
         DictionaryNestedValueConverter converter = new DictionaryNestedValueConverter();
         var result = converter.Convert(nestedValueStore);
-        string json = JsonConvert.SerializeObject(result);
+        string json = JsonConvert.SerializeObject(result, Formatting.Indented);
         encoding ??= Encoding.UTF8;
         var bts = encoding.GetBytes(json);
         stream.Write(bts, 0, bts.Length);

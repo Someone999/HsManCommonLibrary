@@ -10,5 +10,4 @@ public class ConfigPathPrefixProcessResult
 
     public Type SearchType { get; }
     public string MemberName { get; }
-    
 }

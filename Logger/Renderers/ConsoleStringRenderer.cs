@@ -3,7 +3,7 @@ using HsManCommonLibrary.Utils;
 
 namespace HsManCommonLibrary.Logger.Renderers;
 
-public class ConsoleStringRender : IStringRenderer
+public class ConsoleStringRenderer : IStringRenderer
 {
     static string ConvertToConsoleControlSequence(ColoredString coloredString)
     {

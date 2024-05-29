@@ -230,14 +230,24 @@ public class TypeWrapper
     public bool IsSubTypeOf<T>() => IsSubTypeOf(typeof(T));
 
 
-    public Type? GetFirstInheritedType(Type type)
+    private Type? GetFirstInherited(Type type)
     {
+        return GetFirstInheritedTypeInternal(type, new HashSet<Type>());
+    }
+    
+    private Type? GetFirstInheritedTypeInternal(Type type, HashSet<Type> processedTypes)
+    {
+        if (!processedTypes.Add(type))
+        {
+            return null;
+        }
+       
         var inheritedTypes = _type.GetInterfaces().ToList();
         if (type.BaseType != null && type.BaseType != typeof(object))
         {
             inheritedTypes.Add(type.BaseType);
         }
-
+        
         var t0 = inheritedTypes.FirstOrDefault(t => t == type);
         if (t0 != null)
         {
@@ -246,7 +256,48 @@ public class TypeWrapper
 
         foreach (var inheritedType in inheritedTypes)
         {
-            Type? genericType = GetFirstInheritedType(inheritedType);
+            var inheritedMatch = GetFirstInheritedTypeInternal(inheritedType, processedTypes);
+            if (inheritedMatch != null)
+            {
+                return inheritedMatch;
+            }
+        }
+
+        return null;
+    }
+    
+    public Type? GetFirstInheritedGenericType(Type type)
+    {
+        return GetFirstInheritedGenericTypeInternal(type, new HashSet<Type>());
+    }
+    
+    private Type? GetFirstInheritedGenericTypeInternal(Type type, HashSet<Type> processedTypes)
+    {
+        if (!processedTypes.Add(type))
+        {
+            return null;
+        }
+
+        var inheritedTypes = _type.GetInterfaces().ToList();
+        if (type.BaseType != null && type.BaseType != typeof(object))
+        {
+            inheritedTypes.Add(type.BaseType);
+        }
+        
+        var t0 = inheritedTypes.FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == type);
+        if (t0 != null)
+        {
+            return t0;
+        }
+
+        foreach (var inheritedType in inheritedTypes)
+        {
+            if (inheritedType.IsGenericType && inheritedType.GetGenericTypeDefinition() == type)
+            {
+                return inheritedType;
+            }
+
+            var genericType = GetFirstInheritedGenericTypeInternal(inheritedType, processedTypes);
             if (genericType != null)
             {
                 return genericType;
@@ -256,29 +307,4 @@ public class TypeWrapper
         return null;
     }
     
-    public Type? GetFirstInheritedGenericType(Type type)
-    {
-        var inheritedTypes = _type.GetInterfaces().ToList();
-        if (type.BaseType != null && type.BaseType != typeof(object))
-        {
-            inheritedTypes.Add(type.BaseType);
-        }
-
-        var t0 = inheritedTypes.FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == type);
-        if (t0 != null)
-        {
-            return t0;
-        }
-
-        foreach (var inheritedType in inheritedTypes)
-        {
-            Type? genericType = GetFirstInheritedGenericType(inheritedType);
-            if (genericType != null)
-            {
-                return genericType;
-            }
-        }
-
-        return null;
-    }
 }

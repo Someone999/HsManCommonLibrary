@@ -45,5 +45,5 @@ public class AssemblyTypeCollection : IEnumerable<Type>
 
     public TypeWrapper[] ToTypeWrappers() => _types.Select(t => new TypeWrapper(t)).ToArray();
 
-    public Type[] GetSubTypesOf<T>() => GetSubTypesOf(typeof(T));
+    public Type[] GetSubTypesOf<T>(bool ignoreNonPublic = true) => GetSubTypesOf(typeof(T), ignoreNonPublic);
 }
