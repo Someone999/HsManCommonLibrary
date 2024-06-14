@@ -8,11 +8,12 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>HsManCommonLibrary</Title>
         <Version>1.1.15</Version>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <Authors>Someone999</Authors>
         <Description>A simple library to support some basic functions.</Description>
         <RepositoryUrl>https://github.com/Someone999/HsManCommonLibrary</RepositoryUrl>
         <PackageTags>CommonLib</PackageTags>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>

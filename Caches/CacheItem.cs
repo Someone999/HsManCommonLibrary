@@ -14,17 +14,3 @@ internal class CacheItem<T> : ICacheItem<T>, ICacheItemMetadata
     public DateTime LastUseTime { get; set; }
     public int UsedCount { get; set; }
 }
-
-public interface ICacheItem<out T>
-{
-    T? Item { get; }
-    DateTime? ExpireTime { get; }
-    bool IsExpired { get; }
-}
-
-public interface ICacheItemMetadata
-{
-    public DateTime LastUseTime { get; set; }
-    public int UsedCount { get; set; }
-}
-

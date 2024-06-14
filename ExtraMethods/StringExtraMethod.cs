@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace HsManCommonLibrary.ExtractMethods;
+namespace HsManCommonLibrary.ExtraMethods;
 
 public static class StringExtraMethod
 {
