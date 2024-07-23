@@ -48,6 +48,9 @@ public class XmlLoggerFormatter : ILoggerFormatter
             case IFormattable formattable:
                  writer.WriteValue(formattable.ToString(null, CultureInfo.InvariantCulture));
                  break;
+            case IConvertible convertible:
+                writer.WriteValue(convertible.ToString(CultureInfo.InvariantCulture));
+                break;
             case IDictionary<string, object?> dict:
                 foreach (var o in dict)
                 {
@@ -139,6 +142,7 @@ public class XmlLoggerFormatter : ILoggerFormatter
 
         GenerateLogXml(writer, logObject);
         writer.Flush();
+        memoryStream.Write(new[] { (byte)'\n' }, 0, 1);
         var bytes = memoryStream.ToArray();
         int startIndex = 0, length = bytes.Length;
         if (!HasUtf8Bom(bytes))

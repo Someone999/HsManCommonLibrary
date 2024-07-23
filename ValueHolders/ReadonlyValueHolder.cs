@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace HsManCommonLibrary.ValueHolders;
 
 public class ReadonlyValueHolder<T> : IReadonlyValueHolder<T>
@@ -16,7 +18,39 @@ public class ReadonlyValueHolder<T> : IReadonlyValueHolder<T>
     }
 
     private readonly bool _initialized;
-    
+
+    public bool TryGetValueAs<TVal>(out TVal? value)
+    {
+        if (!IsInitialized())
+        {
+            value = default;
+            return false;
+        }
+        
+        if (typeof(TVal) == typeof(T))
+        {
+            value = (TVal?)(object?)Value;
+            return true;
+        }
+        
+        if (!typeof(IConvertible).IsAssignableFrom(typeof(TVal)) && !typeof(TVal).IsAssignableFrom(typeof(T)))
+        {
+            value = default;
+            return false;
+        }
+
+        try
+        {
+            value = GetValueAs<TVal>();
+            return true;
+        }
+        catch (Exception)
+        {
+            value = default;
+            return false;
+        }
+    }
+
     object? IValueHolder.DefaultValue => DefaultValue;
 
     public T? Value { get; }
@@ -29,8 +63,14 @@ public class ReadonlyValueHolder<T> : IReadonlyValueHolder<T>
 
     object? IValueHolder.Value => Value;
 
+    private ConcurrentDictionary<Type, object> _convertCache = new ConcurrentDictionary<Type, object>();
     public TVal GetValueAs<TVal>()
     {
+        if (_convertCache.TryGetValue(typeof(TVal), out var val))
+        {
+            return (TVal)val;
+        }
+        
         if (Value == null)
         {
             throw new InvalidOperationException();
@@ -41,11 +81,15 @@ public class ReadonlyValueHolder<T> : IReadonlyValueHolder<T>
             return (TVal)(object)Value;
         }
 
-        return (TVal)Convert.ChangeType(Value, typeof(TVal));
+        var converted = Convert.ChangeType(Value, typeof(TVal));
+        _convertCache.TryAdd(typeof(TVal), converted);
+        return (TVal) converted;
     }
 
     public bool IsInitialized()
     {
         return _initialized;
     }
+
+    public bool HasValue => _initialized && Value != null;
 }
