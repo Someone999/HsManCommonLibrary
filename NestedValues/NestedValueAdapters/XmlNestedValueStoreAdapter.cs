@@ -82,4 +82,6 @@ public class XmlNestedValueStoreAdapter : INestedValueStoreAdapter
     {
         return t == typeof(string);
     }
+    
+    public static INestedValueStoreAdapter Adapter { get; } = new XmlNestedValueStoreAdapter();
 }

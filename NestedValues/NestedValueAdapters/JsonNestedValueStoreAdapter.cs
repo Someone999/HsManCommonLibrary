@@ -65,4 +65,6 @@ public class JsonNestedValueStoreAdapter : INestedValueStoreAdapter<JToken>
     {
         return t == typeof(JObject) || t == typeof(JArray) || t == typeof(JProperty) || t == typeof(JValue);
     }
+    
+    public static INestedValueStoreAdapter Adapter { get; } = new JsonNestedValueStoreAdapter();
 }

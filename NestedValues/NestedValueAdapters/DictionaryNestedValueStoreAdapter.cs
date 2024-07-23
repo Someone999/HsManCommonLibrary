@@ -20,7 +20,7 @@ public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter<Dictio
             configDictionary.Add(key,
                 IsCompatible(value?.GetType())
                     ? Expend(ConvertToStringObjectDictionary(value))
-                    : new CommonNestedValueStore(value));
+                    : value);
         }
 
         return configDictionary;
@@ -112,4 +112,6 @@ public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter<Dictio
     {
         return IsCompatible(t);
     }
+
+    public static INestedValueStoreAdapter Adapter { get; } = new DictionaryNestedValueStoreAdapter();
 }

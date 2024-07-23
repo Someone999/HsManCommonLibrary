@@ -20,9 +20,9 @@ public class CommonNestedValueStore : INestedValueStore
         switch (_innerVal)
         {
             case Dictionary<string, INestedValueStore> dictionary:
-                return !dictionary.ContainsKey(key) ? null : dictionary[key];
+                return !dictionary.TryGetValue(key, out var value) ? null : value;
             case Dictionary<string, object> objDict:
-                return new CommonNestedValueStore(!objDict.ContainsKey(key) ? null : objDict[key]);
+                return new CommonNestedValueStore(!objDict.TryGetValue(key, out var value1) ? null : value1);
             default:
                 if (_innerVal == null)
                 {
