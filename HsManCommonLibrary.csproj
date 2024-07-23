@@ -13,7 +13,6 @@
         <Description>A simple library to support some basic functions.</Description>
         <RepositoryUrl>https://github.com/Someone999/HsManCommonLibrary</RepositoryUrl>
         <PackageTags>CommonLib</PackageTags>
-        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
