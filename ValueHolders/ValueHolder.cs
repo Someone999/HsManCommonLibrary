@@ -31,7 +31,7 @@ public class ValueHolder<T> : IValueHolder<T>
     }
         
 
-    public event Action<ValueChangedEventArgs<T>>? OnValueChanged;
+    public event Action<ValueChangedEventArgs<T>>? ValueChanged;
     public bool TryGetValueAs<TVal>(out TVal? value)
     {
         if (!IsInitialized())
@@ -95,7 +95,7 @@ public class ValueHolder<T> : IValueHolder<T>
                 _initialized = true;
             }
             
-            OnValueChanged?.Invoke(new ValueChangedEventArgs<T>(_value, value));
+            ValueChanged?.Invoke(new ValueChangedEventArgs<T>(_value, value));
             _value = value;
             _lastVersion = _version;
             _lastValueType = _valueType;

@@ -22,9 +22,9 @@ public class BindableValue<TValue> : IBindableValue<TValue>
 
         ValueChangedEventData<TValue> data = new ValueChangedEventData<TValue>(value, _innerValue);
         _innerValue = value;
-        OnValueChanged?.Invoke(this, data);
+        ValueChanged?.Invoke(this, data);
     }
 
-    public event ValueChangedEventHandler<ValueChangedEventData<TValue>>? OnValueChanged;
+    public event ValueChangedEventHandler<ValueChangedEventData<TValue>>? ValueChanged;
     
 }

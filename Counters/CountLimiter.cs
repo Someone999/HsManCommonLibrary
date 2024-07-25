@@ -19,7 +19,7 @@ public class CountLimiter
         _stopwatch.Start();
     }
 
-    public event EventHandler? OnOverFrequency;
+    public event EventHandler? FrequencyExceeded;
     
     public void TriggerEvent()
     {
@@ -31,14 +31,14 @@ public class CountLimiter
         else
         {
             _counter++;
-            if (_counter <= CountLimit || OnOverFrequency == null)
+            if (_counter <= CountLimit || FrequencyExceeded == null)
             {
                 return;
             }
             
             _counter = 0;
             _stopwatch.Reset();
-            OnOverFrequency?.Invoke(this, EventArgs.Empty);
+            FrequencyExceeded?.Invoke(this, EventArgs.Empty);
         }
     }
 }
