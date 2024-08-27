@@ -21,6 +21,6 @@ class Program
     {
         MemberFinder<PropertyInfo> finder = new MemberFinder<PropertyInfo>(typeof(Program));
         IMemberAccessor accessor = new PropertyMemberAccessor(finder.FindMember("Fuck") ?? throw new Exception());
-        var v = accessor.GetValue(null);
+        accessor.SetValue(null, 1);
     }
 }

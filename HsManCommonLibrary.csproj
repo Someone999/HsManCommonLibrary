@@ -7,14 +7,13 @@
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>HsManCommonLibrary</Title>
-        <Version>1.1.26</Version>
+        <Version>1.1.27</Version>
         <IsPackable>true</IsPackable>
         <Authors>Someone999</Authors>
         <Description>A simple library to support some basic functions.</Description>
         <RepositoryUrl>https://github.com/Someone999/HsManCommonLibrary</RepositoryUrl>
         <PackageTags>CommonLib</PackageTags>
         <PackageReleaseNotes>Significant binary changes have been introduced in this version. Please review the update details and perform comprehensive testing.</PackageReleaseNotes>
-        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>

@@ -64,7 +64,7 @@ public class PropertyMemberAccessor : IMemberAccessor
         var setter = _propertyInfo.SetMethod;
         if (setter == null)
         {
-            throw new InvalidOperationException("This member has no getter.");
+            throw new InvalidOperationException("This member has no setter.");
         }
 
         var argCount = args?.Length ?? 0;
