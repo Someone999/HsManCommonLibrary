@@ -67,7 +67,7 @@ public static class TypeUtils
                 ParameterTypes = types
             };
             var typeWrapper = new TypeWrapper(t);
-            var cons = typeWrapper.GetConstructor(parameterizedMethodFindOptions);
+            var cons = typeWrapper.GetConstructorFinder().GetConstructor(parameterizedMethodFindOptions);
             
             if (cons == null)
             {
@@ -80,8 +80,8 @@ public static class TypeUtils
             }
             
             ConstructorCache.DefaultInstance.CacheConstructor(t, MethodFindOptions.Empty);
-            ins = typeWrapper.CreateInstance(parameters);
-            return ins != null;
+            ins = cons.Invoke(parameters);
+            return true;
         }
         catch (Exception)
         {

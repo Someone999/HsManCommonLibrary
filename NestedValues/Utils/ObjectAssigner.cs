@@ -116,7 +116,9 @@ public static class ObjectAssigner
                     out converterConstructorParams);
 
                 var converter =
-                    converterTypeWrapper.CreateInstanceAs<INestedValueStoreConverter>(converterConstructorParams);
+                    converterTypeWrapper.GetConstructorFinder()
+                        .GetInstanceCreator()
+                        .CreateInstanceAs<INestedValueStoreConverter>(converterConstructorParams);
                 assignOptions ??= new AssignOptions();
                 assignOptions.ConvertOptions.Converter = converter;
             }
@@ -210,14 +212,17 @@ public static class ObjectAssigner
     static object? MatchDictionary(Type collectionType, IDictionary dictionary)
     {
         TypeWrapper wrapper = new TypeWrapper(collectionType);
-        return wrapper.CreateInstance(new object?[] { dictionary });
+        return wrapper.GetConstructorFinder().GetInstanceCreator().CreateInstance(new object?[] { dictionary });
     }
 
     static object? MatchCollection(Type collectionType, IEnumerable enumerable)
     {
         if (!collectionType.IsArray)
         {
-            return new TypeWrapper(collectionType).CreateInstance(new object?[] { enumerable });
+            return new TypeWrapper(collectionType)
+                .GetConstructorFinder()
+                .GetInstanceCreator()
+                .CreateInstance(new object?[] { enumerable });
         }
 
         var genericElements = enumerable.Cast<object>();

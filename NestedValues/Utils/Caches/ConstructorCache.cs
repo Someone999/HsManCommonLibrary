@@ -23,7 +23,7 @@ public class ConstructorCache
         }
         
         TypeWrapper typeWrapper = new TypeWrapper(t);
-        var constructor = typeWrapper.GetConstructor(findOptions);
+        var constructor = typeWrapper.GetConstructorFinder().GetConstructor(findOptions);
         AddConstructor(t, parameterTypes, constructor);
     }
     

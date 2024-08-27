@@ -50,6 +50,7 @@ public class TransactionContext<TCollection>
         {
             transactionLog.Operation.Undo(_originalCollection, transactionLog);
         }
+        
         _readerWriterLockSlim.ExitWriteLock();
     }
 }

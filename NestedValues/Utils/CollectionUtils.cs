@@ -25,17 +25,19 @@ public static class CollectionUtils
     
     public static IList CreateList(Type t)
     {
+        
         var genericListType = typeof(List<>).MakeGenericType(t);
         TypeWrapper listTypeWrapper = new TypeWrapper(genericListType);
-        return listTypeWrapper.CreateInstanceAs<IList>(null) ?? 
+        var instanceCreator = listTypeWrapper.GetConstructorFinder().GetInstanceCreator();
+        return instanceCreator.CreateInstanceAs<IList>(null) ?? 
                throw new Exception("Failed to create List object");
     }
     
     public static IDictionary CreateDictionary(Type keyType, Type valType)
     {
         var genericDictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valType);
-        TypeWrapper dictTypeWrapper = new TypeWrapper(genericDictionaryType);
-        return dictTypeWrapper.CreateInstanceAs<IDictionary>(null) ?? 
+        var instanceCreator = new TypeWrapper(genericDictionaryType).GetConstructorFinder().GetInstanceCreator();;
+        return instanceCreator.CreateInstanceAs<IDictionary>(null) ?? 
                throw new Exception("Failed to create Dictionary object");
     }
 
