@@ -37,14 +37,9 @@ public class ConsoleLoggerFormater : ILoggerFormatter
         var inputType = loggingEvent.Message?.GetType();
         var outputType = typeof(string);
         var processor = outputOptions.MessageObjectProcessors.GetProcessor(inputType, outputType, true);
-        if (processor == null)
-        {
-            msg = loggingEvent.Message?.ToString();
-        }
-        else
-        {
-            msg = processor.ProcessedMessageObject(loggingEvent.Message, true)?.ToString();
-        }
+        msg = processor == null 
+            ? loggingEvent.Message?.ToString() 
+            : processor.ProcessedMessageObject(loggingEvent.Message, true)?.ToString();
         
         
         if (string.IsNullOrEmpty(msg))

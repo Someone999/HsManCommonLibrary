@@ -122,14 +122,14 @@ public class ArgumentMatcher
     public virtual Dictionary<string, ParsedArgument[]> Match(string commandLine,
         IDuplicateOptionHandlingStrategy? strategy)
     {
-        CommandLineParser parser = new CommandLineParser();
+        ArgumentParser parser = new ArgumentParser();
         return MatchCommandLineElements(parser.Parse(commandLine), strategy);
     }
     
     public virtual Dictionary<string, ParsedArgument[]> Match(string[] commandLine,
         IDuplicateOptionHandlingStrategy? strategy)
     {
-        CommandLineParser parser = new CommandLineParser();
+        ArgumentParser parser = new ArgumentParser();
         return MatchCommandLineElements(parser.Parse(commandLine), strategy);
     }
     

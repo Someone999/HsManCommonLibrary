@@ -90,4 +90,6 @@ public class LowerCamelCaseNameStyle : INameStyle
 
         return builder.ToString();
     }
+    
+    public static LowerCamelCaseNameStyle Instance { get; } = new LowerCamelCaseNameStyle();
 }

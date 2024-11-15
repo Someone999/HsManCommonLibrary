@@ -9,7 +9,7 @@ using HsManCommonLibrary.ValueHolders;
 
 namespace HsManCommonLibrary.Configuration;
 
-public class CommonConfigElement : INestedValueStore
+public class CommonConfigElement : INestedValueStore, IConvertibleNestedValueStore, INestedValueStoreAccessor
 {
     private readonly INestedValueStore _config;
 
@@ -146,12 +146,6 @@ public class CommonConfigElement : INestedValueStore
 
 
         await saveStrategy.SaveAsync(this, stream, encoding);
-    }
-
-
-    public T Deserialize<T>(INestedValueStoreDeserializer<T> storeDeserializer)
-    {
-        return storeDeserializer.Deserialize(this);
     }
 
     public ValueHolder<T> GetAsValueHolder<T>()

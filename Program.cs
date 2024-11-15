@@ -1,5 +1,8 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
+using HsManCommonLibrary.Initialization;
 using HsManCommonLibrary.Logging;
 using HsManCommonLibrary.Logging.Appenders;
 using HsManCommonLibrary.Logging.Formatters;
@@ -16,11 +19,8 @@ namespace HsManCommonLibrary;
 
 class Program
 {
-    public static int Fuck { get; } = 0;
+    
     static void Main(string[] args)
     {
-        MemberFinder<PropertyInfo> finder = new MemberFinder<PropertyInfo>(typeof(Program));
-        IMemberAccessor accessor = new PropertyMemberAccessor(finder.FindMember("Fuck") ?? throw new Exception());
-        accessor.SetValue(null, 1);
     }
 }

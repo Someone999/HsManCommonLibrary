@@ -22,6 +22,12 @@ public class MemoryCache<TKey, TValue> where TKey: notnull
         {
             throw new CacheFullException();
         }
+
+        if (_cache.ContainsKey(key))
+        {
+            _cache[key] = new CacheItem<TValue>(value, expireTime);
+            return;
+        }
         
         _cache.Add(key, new CacheItem<TValue>(value, expireTime));
     }

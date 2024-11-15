@@ -76,7 +76,7 @@ public class PropertyMemberAccessor : IMemberAccessor
             Array.Copy(args, 0, obj, 1, args.Length);
         }
         
-        CheckParameters(setter, args);
-        setter.Invoke(instance, args);
+        CheckParameters(setter, obj);
+        setter.Invoke(instance, obj);
     }
 }
