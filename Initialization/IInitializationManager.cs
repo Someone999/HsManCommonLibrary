@@ -4,7 +4,8 @@ namespace HsManCommonLibrary.Initialization;
 
 public interface IInitializationManager
 {
-    HashSet<Type> InitializationTypes { get; }
+    void AddInitializationType(Type type);
+    void RemoveInitializationType(Type type);
     bool ShouldAbort { get; }
     InitializeContext Context { get; }
     InitializeState State { get; }
