@@ -6,7 +6,10 @@ using HsManCommonLibrary.ValueHolders;
 
 namespace HsManCommonLibrary.NestedValues;
 
-public class CommonNestedValueStore : INestedValueStore
+public class CommonNestedValueStore : INestedValueStore, 
+    IConvertibleNestedValueStore,
+    IDeserializableNestedValueStore,
+    INestedValueStoreAccessor
 {
     private readonly object? _innerVal;
 

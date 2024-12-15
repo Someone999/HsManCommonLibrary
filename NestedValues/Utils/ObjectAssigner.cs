@@ -15,7 +15,6 @@ namespace HsManCommonLibrary.NestedValues.Utils;
 
 public static class ObjectAssigner
 {
-    private static readonly object StaticLocker = new();
     public static PropertyCache PropertyCache => PropertyCache.DefaultInstance;
 
     public static void AssignTo(object? obj, INestedValueStore? nestedValueStore, AssignOptions? assignOptions)
@@ -24,25 +23,16 @@ public static class ObjectAssigner
         {
             return;
         }
-
-        //Stopwatch stopwatch = new Stopwatch();
-        //stopwatch.Start();
+        
         var type = obj.GetType();
         
         PropertyCache.AddType(type);
         PropertyCache.CacheAllAccessors();
-
-
-        //stopwatch.Stop();
-        //Console.WriteLine($"GetProperties: {stopwatch.Elapsed}");
-        //stopwatch.Reset();
-
+        
         var properties = PropertyCache.GetProperties(type) ?? Array.Empty<PropertyInfo>();
         foreach (var property in properties)
         {
-            //stopwatch.Start();
-            AutoAssignAttribute? attr;
-            attr = AttributeCache.DefaultInstance.GetAttribute<AutoAssignAttribute>(property);
+            var attr = AttributeCache.DefaultInstance.GetAttribute<AutoAssignAttribute>(property);
             
             if (attr == null)
             {
@@ -62,9 +52,7 @@ public static class ObjectAssigner
             {
                 AssignToHasAttribute(nestedValueStore, property, obj, attr, assignOptions);
             }
-
-            // stopwatch.Stop();
-            // Console.WriteLine($"SetProperty: {stopwatch.Elapsed}");
+            
         }
     }
 
@@ -78,7 +66,7 @@ public static class ObjectAssigner
             var detectResult = NameStyleDetector.Detect(propertyName);
             if (detectResult != null)
             {
-                propertyName = new LowerCamelCaseNameStyle().Normalize(detectResult.NameParts);
+                propertyName = LowerCamelCaseNameStyle.Instance.Normalize(detectResult.NameParts);
             }
 
             val = nestedValueStore[propertyName];
