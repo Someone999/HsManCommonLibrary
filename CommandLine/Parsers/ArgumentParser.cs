@@ -2,7 +2,7 @@ using System.Text;
 
 namespace HsManCommonLibrary.CommandLine.Parsers;
 
-public class CommandLineParser
+public class ArgumentParser
 {
     public List<string> ArgumentPrefixes { get; } = new List<string>()
     {

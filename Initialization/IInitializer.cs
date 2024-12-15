@@ -2,5 +2,5 @@ namespace HsManCommonLibrary.Initialization;
 
 public interface IInitializer
 {
-    public InitializeState Initialize(IInitializationManager initializationManager);
+    public void Initialize(IInitializationManager initializationManager);
 }

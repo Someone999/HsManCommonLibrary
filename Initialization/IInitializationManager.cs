@@ -8,12 +8,16 @@ public interface IInitializationManager
     bool ShouldAbort { get; }
     InitializeContext Context { get; }
     InitializeState State { get; }
-    void ReportCompleted<T>();
-    void ReportError<T>(Exception exception, string message);
-    void ReportFailed<T>();
+    void ReportCompleted<T>(IInitializer initializer);
+    void ReportError<T>(IInitializer initializer, Exception? exception = null, string? message = null);
+    void ReportFailed<T>(IInitializer initializer, string? message = null);
     void Abort();
     bool IsLoaded<T>();
-    InitializeState GetInitializeStateState<T>();
+    event EventHandler<CompletedReportedEventArgs>? CompletedReported;
+    event EventHandler<FailedReportedEventArgs>? FailedReported;
+    event EventHandler<ErrorReportedEventArgs>? ErrorReported;
+    
+    InitializeState GetInitializeState<T>();
     IInitializationTimeManager TimeManager { get; }
     IClock Clock { get; }
 }

@@ -11,13 +11,25 @@ public class InitializationManager : IInitializationManager
         TimeManager = new InitializationTimeManager(Clock);
     }
 
+    public void AddInitializationType(Type initializationType)
+    {
+        InitializationTypes.Add(initializationType);
+        _initializationStates[initializationType] = InitializeState.None;
+    }
+
+    public void RemoveInitializationType(Type initializationType)
+    {
+        InitializationTypes.Remove(initializationType);
+        _initializationStates.Remove(initializationType);
+    }
+
     public bool ShouldAbort { get; private set; }
-    public HashSet<Type> InitializationTypes { get; } = new HashSet<Type>();
+    private HashSet<Type> InitializationTypes { get; } = new HashSet<Type>();
     public InitializeContext Context { get; }
     public InitializeState State { get; private set; } = InitializeState.None;
     private readonly object _locker = new();
     private readonly Dictionary<Type, InitializeState> _initializationStates = new();
-    public void ReportCompleted<T>()
+    public void ReportCompleted<T>(IInitializer initializer)
     {
         lock (_locker)
         {
@@ -27,11 +39,12 @@ public class InitializationManager : IInitializationManager
             }
             
             _initializationStates[typeof(T)] = InitializeState.Completed;
+            CompletedReported?.Invoke(this, new CompletedReportedEventArgs(initializer));
         }
        
     }
 
-    public void ReportError<T>(Exception exception, string message)
+    public void ReportError<T>(IInitializer initializer, Exception? exception = null, string? message = null)
     {
         lock (_locker)
         {
@@ -41,14 +54,17 @@ public class InitializationManager : IInitializationManager
             }
             
             _initializationStates[typeof(T)] = InitializeState.Completed;
+            ErrorReported?.Invoke(this, new ErrorReportedEventArgs(initializer, exception, message));
         }
     }
 
-    public void ReportFailed<T>()
+    public void ReportFailed<T>(IInitializer initializer, string? message)
     {
         lock (_locker)
         {
             _initializationStates[typeof(T)] = InitializeState.Failed;
+            State = InitializeState.Failed;
+            FailedReported?.Invoke(this, new FailedReportedEventArgs(initializer, message));
         }
     }
 
@@ -62,7 +78,7 @@ public class InitializationManager : IInitializationManager
 
     public bool IsLoaded<T>() => _initializationStates[typeof(T)] == InitializeState.Completed;
 
-    public InitializeState GetInitializeStateState<T>()
+    public InitializeState GetInitializeState<T>()
     {
         if (ShouldAbort)
         {
@@ -84,6 +100,9 @@ public class InitializationManager : IInitializationManager
             : InitializeState.Initializing;
     }
 
+    public event EventHandler<CompletedReportedEventArgs>? CompletedReported;
+    public event EventHandler<FailedReportedEventArgs>? FailedReported;
+    public event EventHandler<ErrorReportedEventArgs>? ErrorReported;
     public IInitializationTimeManager TimeManager { get; }
     public IClock Clock { get; }
 }
