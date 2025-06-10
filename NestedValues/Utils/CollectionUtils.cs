@@ -18,9 +18,15 @@ public static class CollectionUtils
         {
             throw new InvalidOperationException("Not a collection type");
         }
-        
+
         var genericType = new TypeWrapper(t).GetFirstInheritedGenericType(typeof(IEnumerable<>));
-        return genericType ?? throw new Exception("Failed to get type of element");
+        var genericArgs = genericType?.GetGenericArguments();
+        if (genericArgs is not { Length: 1 })
+        {
+            throw new InvalidOperationException("Not a collection type or a not supported collection type");
+        }
+        
+        return genericArgs[0] ?? throw new Exception("Failed to get type of element");
     }
     
     public static IList CreateList(Type t)

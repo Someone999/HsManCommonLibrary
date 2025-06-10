@@ -10,6 +10,11 @@ internal static class TypeGenericFinder
                inheritedTypes.Select(t => FindFirstInheritedGenericType(t, targetGenericType)).FirstOrDefault(t => t != null);
     }
 
+    public static Type[] GetGenericArguments(Type type)
+    {
+        return type.GetGenericArguments();
+    }
+
     private static IEnumerable<Type> GetAllInheritedTypes(Type type)
     {
         var inheritedTypes = type.GetInterfaces().ToList();

@@ -20,7 +20,7 @@ public class InitializationTimeManager : IInitializationTimeManager
 
     private void ThrowWhenTypeMismatch(Type keyType, Type valueType)
     {
-        if (keyType == typeof(Type) && valueType.IsAssignableTo(typeof(IInitializationTimeRecord)))
+        if (keyType == typeof(Type) && typeof(IInitializationTimeRecord).IsAssignableFrom(valueType))
         {
             return;
         }

@@ -7,7 +7,9 @@ using HsManCommonLibrary.Exceptions;
 using HsManCommonLibrary.NameStyleConverters;
 using HsManCommonLibrary.NestedValues.Attributes;
 using HsManCommonLibrary.NestedValues.NestedValueConverters;
+using HsManCommonLibrary.NestedValues.Utils.Assigners;
 using HsManCommonLibrary.NestedValues.Utils.Caches;
+using HsManCommonLibrary.NestedValues.Utils.Collections;
 using HsManCommonLibrary.Reflections;
 using Newtonsoft.Json;
 
@@ -25,6 +27,11 @@ public static class ObjectAssigner
         }
         
         var type = obj.GetType();
+        if (CollectionUtils.IsCollection(type))
+        {
+            CollectionFiller.FillCollection(obj, (IEnumerable?) nestedValueStore.GetValue());
+            return;
+        }
         
         PropertyCache.AddType(type);
         PropertyCache.CacheAllAccessors();
@@ -118,115 +125,25 @@ public static class ObjectAssigner
 
     private static void SetValue(PropertyInfo propertyInfo, object? ins, object? val, AssignOptions? assignOptions)
     {
-        if (val == null || TypeCompareCache.DefaultInstance.GetIsCompatible(val, propertyInfo.PropertyType))
+        if (val == null)
         {
-            propertyInfo.SetValue(ins, val);
+            NullObjectAssigner.ObjectAssigner.Assign(propertyInfo, ins, val, assignOptions);
             return;
         }
-
-        var propertySetter = PropertyCache.GetAccessors(propertyInfo)?.Setter;
-        if (propertySetter == null)
-        {
-            return;
-        }
-
+        
         Type propertyType = propertyInfo.PropertyType;
 
         if (CollectionUtils.IsDictionary(propertyType))
         {
-            var types = CollectionUtils.GetDictionaryGenericTypes(propertyType);
-            var nestedVal = (INestedValueStore)val;
-            var dict = CollectionUtils.CreateDictionaryFromNestedValue(types.ValueType, nestedVal, assignOptions);
-            propertySetter.Invoke(ins, new[] { MatchDictionary(propertyType, dict) });
+           DictionaryObjectAssigner.ObjectAssigner.Assign(propertyInfo, ins, val, assignOptions);
         }
         else if (CollectionUtils.IsCollection(propertyInfo.PropertyType))
         {
-            var elementType = CollectionUtils.GetCollectionGenericType(propertyType);
-            var nestedVal = (INestedValueStore)val;
-            var list = CollectionUtils.CreateListFromNestedValueStore(elementType, nestedVal, assignOptions);
-            propertyInfo.SetValue(ins, MatchCollection(propertyType, list));
+            CollectionObjectAssigner.ObjectAssigner.Assign(propertyInfo, ins, val, assignOptions);
         }
         else
         {
-            var nestedVal = (INestedValueStore)val;
-            var currentVal = nestedVal.GetValue();
-            if (NullNestedValue.Value.Equals(currentVal))
-            {
-                currentVal = default;
-                propertySetter.Invoke(ins, new[] { currentVal });
-                return;
-            }
-
-            if (TypeUtils.NeedToCreateNewObject(propertyType, nestedVal))
-            {
-                TypeUtils.TryCreateInstance(propertyType, nestedVal, assignOptions, out var obj);
-                propertySetter.Invoke(ins, new[] { obj });
-                return;
-            }
-
-            if (TypeCompareCache.DefaultInstance.GetIsCompatible(currentVal, propertyType))
-            {
-                propertySetter.Invoke(ins, new[] { currentVal });
-                return;
-            }
-
-            if (assignOptions?.ConvertOptions.Converter != null)
-            {
-                currentVal = assignOptions.ConvertOptions.Converter.Convert(nestedVal);
-                propertySetter.Invoke(ins, new[] { currentVal });
-                return;
-            }
-
-            var allowAutoAdapt = assignOptions?.ConvertOptions.AllowAutoAdapt ?? true;
-            if (allowAutoAdapt && currentVal is IConvertible)
-            {
-                if (propertyType.IsEnum)
-                {
-                    propertyType = Enum.GetUnderlyingType(propertyType);
-                }
-
-                currentVal = Convert.ChangeType(currentVal, propertyType);
-            }
-            else
-            {
-                throw new InvalidOperationException("Auto-adapt is disallowed");
-            }
-
-            propertySetter.Invoke(ins, new[] { currentVal });
+            GeneralObjectAssigner.ObjectAssigner.Assign(propertyInfo, ins, val, assignOptions);
         }
-    }
-
-
-    static object? MatchDictionary(Type collectionType, IDictionary dictionary)
-    {
-        TypeWrapper wrapper = new TypeWrapper(collectionType);
-        return wrapper.GetConstructorFinder().GetInstanceCreator().CreateInstance(new object?[] { dictionary });
-    }
-
-    static object? MatchCollection(Type collectionType, IEnumerable enumerable)
-    {
-        if (!collectionType.IsArray)
-        {
-            return new TypeWrapper(collectionType)
-                .GetConstructorFinder()
-                .GetInstanceCreator()
-                .CreateInstance(new object?[] { enumerable });
-        }
-
-        var genericElements = enumerable.Cast<object>();
-        var genericElementList = genericElements.ToList();
-        if (genericElementList.Count == 0)
-        {
-            return null;
-        }
-
-        var genericType = genericElementList[0].GetType();
-        var arr = Array.CreateInstance(genericType, genericElementList.Count);
-        for (int i = 0; i < genericElementList.Count; i++)
-        {
-            arr.SetValue(genericElementList[i], i);
-        }
-
-        return arr;
     }
 }

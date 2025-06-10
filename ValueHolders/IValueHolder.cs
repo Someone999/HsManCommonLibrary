@@ -17,5 +17,5 @@ public interface IValueHolder<T> : IValueHolder
     event Action<ValueChangedEventArgs<T>> ValueChanged;  
     new T? DefaultValue { get; }
     new T? Value { get; }
-    void BindValue(T value);
+    void SetValue(T value);
 }

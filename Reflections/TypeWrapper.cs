@@ -23,7 +23,6 @@ public class TypeWrapper
     }
 
     public bool IsSubTypeOf<T>() => IsSubTypeOf(typeof(T));
-    
     public Type? GetFirstInheritedType(Type type) =>
         TypeInheritanceFinder.FindFirstInheritedType(_type, type);
 

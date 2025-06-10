@@ -9,7 +9,7 @@ public class InstanceCreator
         _constructorFinder = constructorFinder;
     }
 
-    public object? CreateInstance(object?[]? parameters)
+    public object? CreateInstance(object?[]? arguments)
     {
         var constructorInfo = _constructorFinder.GetConstructor(new MethodFindOptions());
 
@@ -18,12 +18,18 @@ public class InstanceCreator
             throw new MissingMethodException();
         }
 
-        if (parameters == null)
+        return constructorInfo.Invoke(arguments ?? Array.Empty<object>());
+    }
+
+    public object? CreateInstance(MethodFindOptions findOptions, object?[]? arguments)
+    {
+        var constructorInfo = _constructorFinder.GetConstructor(findOptions);
+        if (constructorInfo == null)
         {
-            return constructorInfo.Invoke(Array.Empty<object>());
+            throw new MissingMethodException();
         }
 
-        return constructorInfo.Invoke(parameters);
+        return constructorInfo.Invoke(arguments ?? Array.Empty<object>());
     }
 
     public T? CreateInstanceAs<T>(object?[]? parameters) => (T?)CreateInstance(parameters);

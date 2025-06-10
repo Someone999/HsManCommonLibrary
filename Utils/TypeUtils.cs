@@ -17,6 +17,6 @@ public static class TypeUtils
     
     public static bool IsCompatibleType(Type sourceObj, Type targetType)
     {
-        return targetType.IsInstanceOfType(sourceObj);
+        return targetType.IsAssignableFrom(sourceObj);
     }
 }

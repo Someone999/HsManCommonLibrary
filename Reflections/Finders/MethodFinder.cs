@@ -4,11 +4,16 @@ namespace HsManCommonLibrary.Reflections.Finders;
 
 public class MethodFinder : MemberFinder<MethodInfo>
 {
-    MethodInfo? FindMethodByTypes(IReadOnlyCollection<Type?> types)
+    MethodInfo? FindMethodByTypes(string name, IReadOnlyCollection<Type?> types)
     {
         var methods = InnerType.GetMethods();
         foreach (var method in methods)
         {
+            if (method.Name != name)
+            {
+                continue;
+            }
+            
             var parameters = method.GetParameters();
             if (types.Count != parameters.Length)
             {
@@ -51,7 +56,7 @@ public class MethodFinder : MemberFinder<MethodInfo>
         return true;
     }
     
-    public MethodInfo? FindMember(MethodFindOptions methodFindOptions)
+    public MethodInfo? FindMethod(MethodFindOptions methodFindOptions)
     {
         var bindingFlags = methodFindOptions.BindingFlags ?? BindingFlagsConstants.PublicMembers;
         var methods = FindMembers(methodFindOptions.MemberName, bindingFlags);

@@ -8,12 +8,12 @@ public class PropertyCache
     private DictionaryWrapper<Type, PropertyInfo[]> _propertiesCache =
         DictionaryWrapper<Type, PropertyInfo[]>.CreateCurrentUsing();
 
-    private DictionaryWrapper<PropertyInfo, PropertyAccessors> _accessorCache =
-        DictionaryWrapper<PropertyInfo, PropertyAccessors>.CreateCurrentUsing();
+    private DictionaryWrapper<PropertyInfo, IPropertyAccessorCache> _accessorCache =
+        DictionaryWrapper<PropertyInfo, IPropertyAccessorCache>.CreateCurrentUsing();
 
     private int _lastVersion = 0,  _version = 0;
 
-    public PropertyAccessors? GetAccessors(PropertyInfo propertyInfo)
+    public IPropertyAccessorCache? GetAccessors(PropertyInfo propertyInfo)
     {
         return _accessorCache.Dictionary.TryGetValue(propertyInfo, out var r) ? r : null;
     }
@@ -36,6 +36,18 @@ public class PropertyCache
         Interlocked.Add(ref _version, 1);
     }
 
+    IPropertyAccessorCache AddOrGet(PropertyInfo propertyInfo)
+    {
+        if (_accessorCache.TryGetValue(propertyInfo, out var accessor) && accessor != null)
+        {
+            return accessor;
+        }
+        
+        accessor = new ReflectionPropertyAccessorCache(propertyInfo);
+        _accessorCache.TryAdd(propertyInfo, accessor);
+
+        return accessor;
+    }
     void CacheGetterMethod(PropertyInfo propertyInfo)
     {
         if (propertyInfo.GetMethod == null)
@@ -43,12 +55,8 @@ public class PropertyCache
             return;
         }
 
-        if (!_accessorCache.ContainsKey(propertyInfo))
-        {
-            _accessorCache.TryAdd(propertyInfo, new PropertyAccessors());
-        }
 
-        _accessorCache[propertyInfo].Getter = propertyInfo.GetMethod;
+        AddOrGet(propertyInfo).CacheGetter();
     }
 
     void CacheSetterMethod(PropertyInfo propertyInfo)
@@ -58,12 +66,7 @@ public class PropertyCache
             return;
         }
 
-        if (!_accessorCache.ContainsKey(propertyInfo))
-        {
-            _accessorCache.TryAdd(propertyInfo, new PropertyAccessors());
-        }
-
-        _accessorCache[propertyInfo].Setter = propertyInfo.SetMethod;
+        AddOrGet(propertyInfo).CacheSetter();
     }
 
     void CacheAccessors(PropertyInfo propertyInfo)

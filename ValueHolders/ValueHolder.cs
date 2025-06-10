@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using HsManCommonLibrary.Utils;
 
 namespace HsManCommonLibrary.ValueHolders;
 
@@ -19,17 +20,13 @@ public class ValueHolder<T> : IValueHolder<T>
         _valueType = value?.GetType() ?? typeof(T);
     }
 
-    public ValueHolder(T? value)
+    public ValueHolder(T? value = default)
     {
         _value = value;
         _initialized = value is not null;
         _valueType = value?.GetType() ?? typeof(T);
     }
-        
-    public ValueHolder()
-    {
-    }
-        
+
 
     public event Action<ValueChangedEventArgs<T>>? ValueChanged;
     public bool TryGetValueAs<TVal>(out TVal? value)
@@ -81,7 +78,7 @@ public class ValueHolder<T> : IValueHolder<T>
     }
 
     private readonly object _locker = new object();
-    public void BindValue(T value)
+    public void SetValue(T value)
     {
         lock (_locker)
         {
