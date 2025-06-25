@@ -55,7 +55,7 @@ public static class ReflectionAssemblyManager
         }
     }
 
-    public static AssemblyTypeCollection CreateAssemblyTypeCollection()
+    public static TypeCollection CreateAssemblyTypeCollection()
     {
         lock (StaticLocker)
         {
@@ -66,7 +66,7 @@ public static class ReflectionAssemblyManager
                 types.AddRange(asmType);
             }
 
-            return new AssemblyTypeCollection(types);
+            return new TypeCollection(types);
         }
     }
 }

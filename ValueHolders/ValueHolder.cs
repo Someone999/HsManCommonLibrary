@@ -129,7 +129,26 @@ public class ValueHolder<T> : IValueHolder<T>
 
     public bool IsInitialized() => _initialized;
     public bool HasValue => _initialized && Value != null;
-    
+    public void ResetValue()
+    {
+        _value = default;
+    }
+
+    public void Uninitialize()
+    {
+       Clear();
+       _initialized = false;
+    }
+
+    public void Clear()
+    {
+        _lastVersion = 0;
+        _lastValueType = null;
+        _convertCache.Clear();
+        _version = -1;
+        _valueType = null;
+    }
+
     public T? GetValueOrDefault(T? defVal) => Value ?? defVal;
     
     public T GetValueOrDefaultNotNull(T defVal) => Value ?? defVal;

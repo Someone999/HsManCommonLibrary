@@ -92,4 +92,24 @@ public class ReadonlyValueHolder<T> : IReadonlyValueHolder<T>
     }
 
     public bool HasValue => _initialized && Value != null;
+
+    private void ThrowIfChanged()
+    {
+        throw new InvalidOperationException("This value holder is readonly.");
+    }
+    
+    public void ResetValue()
+    {
+        ThrowIfChanged();
+    }
+
+    public void Uninitialize()
+    {
+        ThrowIfChanged();
+    }
+
+    public void Clear()
+    {
+        ThrowIfChanged();
+    }
 }

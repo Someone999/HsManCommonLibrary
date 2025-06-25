@@ -74,7 +74,8 @@ public class DictionaryNestedValueStoreAdapter : INestedValueStoreAdapter<Dictio
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
             {
-                return true;
+                var genericArgs = type.GetGenericArguments();
+                return genericArgs.Length != 2 || genericArgs[1] != typeof(INestedValueStore);
             }
             
             type = type.BaseType;

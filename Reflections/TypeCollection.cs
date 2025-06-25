@@ -2,9 +2,9 @@ using System.Collections;
 
 namespace HsManCommonLibrary.Reflections;
 
-public class AssemblyTypeCollection : IEnumerable<Type>
+public class TypeCollection : IEnumerable<Type>
 {
-    public AssemblyTypeCollection(IEnumerable<Type> types)
+    public TypeCollection(IEnumerable<Type> types)
     {
         _types = new List<Type>(types);
     }
@@ -22,7 +22,7 @@ public class AssemblyTypeCollection : IEnumerable<Type>
         return _types.FirstOrDefault(t => t.FullName == name);
     }
 
-    public Type[] GetSubTypesOf(Type t, bool ignoreNonPublic = true)
+    public TypeCollection GetSubTypesOf(Type t, bool ignoreNonPublic = true)
     {
         List<Type> matchedTypes = new List<Type>();
         foreach (var type in _types)
@@ -40,10 +40,10 @@ public class AssemblyTypeCollection : IEnumerable<Type>
             matchedTypes.Add(type);
         }
 
-        return matchedTypes.ToArray();
+        return new TypeCollection(matchedTypes.ToArray());
     }
 
     public TypeWrapper[] ToTypeWrappers() => _types.Select(t => new TypeWrapper(t)).ToArray();
 
-    public Type[] GetSubTypesOf<T>(bool ignoreNonPublic = true) => GetSubTypesOf(typeof(T), ignoreNonPublic);
+    public TypeCollection GetSubTypesOf<T>(bool ignoreNonPublic = true) => GetSubTypesOf(typeof(T), ignoreNonPublic);
 }

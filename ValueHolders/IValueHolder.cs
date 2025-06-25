@@ -10,6 +10,9 @@ public interface IValueHolder
     TVal GetValueAs<TVal>();
     bool IsInitialized();
     bool HasValue { get; }
+    void ResetValue();
+    void Uninitialize();
+    void Clear();
 }
 
 public interface IValueHolder<T> : IValueHolder
