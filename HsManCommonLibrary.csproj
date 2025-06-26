@@ -7,7 +7,7 @@
         <LangVersion>11</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>HsManCommonLibrary</Title>
-        <Version>3.2.0</Version>
+        <Version>3.3.1</Version>
         <IsPackable>true</IsPackable>
         <Authors>Someone999</Authors>
         <Description>A simple library to support some basic functions.</Description>

@@ -2,23 +2,23 @@ using System.Reflection;
 
 namespace HsManCommonLibrary.Reflections;
 
-public static class ReflectionAssemblyManager
+public class ReflectionAssemblyManager
 {
-    private static readonly List<Assembly> RegisteredAssemblies = new List<Assembly>();
-    private static readonly object StaticLocker = new object();
+    private readonly List<Assembly> _registeredAssemblies = new List<Assembly>();
+    private readonly object _locker = new object();
 
-    public static void AddAssembly(Assembly assembly)
+    public void AddAssembly(Assembly assembly)
     {
-        lock (StaticLocker)
+        lock (_locker)
         {
-            if (!RegisteredAssemblies.Contains(assembly))
+            if (!_registeredAssemblies.Contains(assembly))
             {
-                RegisteredAssemblies.Add(assembly);
+                _registeredAssemblies.Add(assembly);
             }
         }
     }
 
-    public static void AddAssemblyFrom(string path)
+    public void AddAssemblyFrom(string path)
     {
         try
         {
@@ -31,7 +31,7 @@ public static class ReflectionAssemblyManager
         }
     }
 
-    public static void AddAssembliesFromPath(string path, bool excludeExeFiles)
+    public void AddAssembliesFromPath(string path, bool excludeExeFiles)
     {
         try
         {
@@ -55,11 +55,11 @@ public static class ReflectionAssemblyManager
         }
     }
 
-    public static TypeCollection CreateAssemblyTypeCollection()
+    public TypeCollection CreateAssemblyTypeCollection()
     {
-        lock (StaticLocker)
+        lock (_locker)
         {
-            var asmTypes = RegisteredAssemblies.Select(asm => asm.GetTypes());
+            var asmTypes = _registeredAssemblies.Select(asm => asm.GetTypes());
             List<Type> types = new List<Type>();
             foreach (var asmType in asmTypes)
             {
@@ -69,4 +69,7 @@ public static class ReflectionAssemblyManager
             return new TypeCollection(types);
         }
     }
+
+    private static readonly Lazy<ReflectionAssemblyManager> Lazy = new();
+    public static ReflectionAssemblyManager DefaultInstance => Lazy.Value;
 }

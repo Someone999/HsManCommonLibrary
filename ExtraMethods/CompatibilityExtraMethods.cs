@@ -2,10 +2,10 @@ namespace HsManCommonLibrary.ExtraMethods;
 
 public static class CompatibilityExtraMethods
 {
-#if NETFRAMEWORK || !NETCOREAPP2_1_OR_GREATER
+#if NETFRAMEWORK || NETCOREAPP2_0 || NETSTANDARD2_0
     public static TValue? GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey key)
     {
-        return d.GetValueOrDefault(key, default(TValue));
+        return d.GetValueOrDefault(key, default);
     }
 
     public static TValue? GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey key, TValue? defaultVal)

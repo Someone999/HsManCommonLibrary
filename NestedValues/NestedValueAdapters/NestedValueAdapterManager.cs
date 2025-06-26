@@ -1,5 +1,6 @@
 using HsManCommonLibrary.Exceptions;
 using HsManCommonLibrary.Reflections;
+using HsManCommonLibrary.ExtraMethods;
 
 namespace HsManCommonLibrary.NestedValues.NestedValueAdapters;
 
@@ -16,7 +17,7 @@ public static class NestedValueAdapterManager
     {
         lock (StaticLocker)
         {
-            ReflectionAssemblyManager.AddAssembly(typeof(NestedValueAdapterManager).Assembly);
+            ReflectionAssemblyManager.DefaultInstance.AddAssembly(typeof(NestedValueAdapterManager).Assembly);
             if (_adapters != null)
             {
                 return;
@@ -24,7 +25,7 @@ public static class NestedValueAdapterManager
 
             _adapters = new Dictionary<Type, INestedValueStoreAdapter>();
             var types = 
-                ReflectionAssemblyManager.CreateAssemblyTypeCollection().GetSubTypesOf<INestedValueStoreAdapter>();
+                ReflectionAssemblyManager.DefaultInstance.CreateAssemblyTypeCollection().GetSubTypesOf<INestedValueStoreAdapter>();
 
             foreach (var type in types)
             {
@@ -62,7 +63,7 @@ public static class NestedValueAdapterManager
             throw new HsManInternalException("Field was failed to init");
         }
 
-        return !_adapters.ContainsKey(t) ? null : _adapters[t];
+        return _adapters.GetValueOrDefault(t);
     }
         
     public static INestedValueStoreAdapter? GetAdapterByAdapterType<T>()
