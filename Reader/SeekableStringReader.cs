@@ -2,62 +2,118 @@ namespace HsManCommonLibrary.Reader;
 
 public class SeekableStringReader : TextReader
 {
-    private string _baseString;
-    public int Position { get; set; }
-    public SeekableStringReader(string baseString)
-    {
-        _baseString = baseString;
-    }
+    private int _position = 0;
+    private readonly string _innerString;
 
-    public override int Read()
+    public SeekableStringReader(string innerString)
     {
-        if (Position == _baseString.Length)
-        {
-            return -1;
-        }
-
-        return _baseString[Position++];
-    }
-    
-    public override int Peek()
-    {
-        if (Position == _baseString.Length)
-        {
-            return -1;
-        }
-
-        return _baseString[Position];
+        _innerString = innerString;
     }
     
     public char PeekChar()
     {
-        var cur = Peek();
-        return cur == -1 ? '\0' : (char)cur;
+        var next = Peek();
+        return next == -1 ? '\0' : (char)next;
+    }
+
+    public char PeekChar(int offset)
+    {
+        int index = Position + offset;
+        return index >= _innerString.Length ? '\0' : _innerString[index];
+    }
+    
+    public char[] PeekChars(int count)
+    {
+        int maxCount = Math.Min(count, _innerString.Length - Position);
+        char[] chars = new char[maxCount];
+
+        for (int i = 0; i < maxCount; i++)
+        {
+            chars[i] = _innerString[Position + i];
+        }
+
+        return chars;
+    }
+
+    public string PeekString(int length)
+    {
+        if (length <= 0 || Position >= _innerString.Length)
+        {
+            return "";
+        }
+        
+        int maxCount = Math.Min(length, _innerString.Length - Position);
+        var sub = _innerString.Substring(Position, maxCount);
+        return sub;
     }
     
     public char ReadChar()
     {
-        var cur = Read();
-        return cur == -1 ? '\0' : (char)cur;
+        var next = Read();
+        return next == -1 ? '\0' : (char)next;
     }
 
-    public override int Read(char[] buffer, int index, int count)
+    public string ReadString(int length)
     {
-        if (count > _baseString.Length - Position)
-        {
-            count = _baseString.Length - Position;
-        }
-
-        if (count <= 0)
-        {
-            return 0;
-        }
-
-        char[] charArray = _baseString.ToCharArray(Position, count);
-
-        int readCount = Math.Min(count, buffer.Length - index);
-        Array.Copy(charArray, 0, buffer, index, readCount);
-        Position += readCount;
-        return readCount;
+        string str = PeekString(length);
+        Position += str.Length;
+        return str;
     }
+
+    public void ConsumeChars(int count)
+    {
+        Position = Math.Min(Position + count, _innerString.Length);
+    }
+    
+    public char[] ReadChars(int count)
+    {
+        int maxCount = Math.Min(count, _innerString.Length - Position);
+        var result = _innerString.Substring(Position, maxCount).ToCharArray();
+        Position += maxCount;
+        return result;
+    }
+    
+    public override int Peek()
+    {
+        if (Position >= _innerString.Length)
+        {
+            return -1;
+        }
+
+        return _innerString[Position];
+    }
+    
+    public override int Read()
+    {
+        if (Position >= _innerString.Length)
+        {
+            return -1;
+        }
+        
+        return _innerString[Position++];
+    }
+
+    public void Reset()
+    {
+        Position = -1;
+    }
+    
+    
+    private void SetPosition(int position)
+    {
+        if (Position >= _innerString.Length)
+        {
+            throw new InvalidOperationException($"Position is too large {position}/{_innerString.Length}");
+        }
+        
+        _position = position;
+    }
+
+    public int Position
+    {
+        get => _position;
+        set => SetPosition(value);
+    }
+    
+    public bool EndOfString => Position >= _innerString.Length;
 }
