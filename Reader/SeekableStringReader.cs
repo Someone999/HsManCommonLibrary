@@ -98,10 +98,9 @@ public class SeekableStringReader : TextReader
         Position = -1;
     }
     
-    
     private void SetPosition(int position)
     {
-        if (Position >= _innerString.Length)
+        if (position >= _innerString.Length || position < 0)
         {
             throw new InvalidOperationException($"Position is too large {position}/{_innerString.Length}");
         }
